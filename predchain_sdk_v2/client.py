@@ -109,6 +109,8 @@ class PredchainSDKv2Client:
         self._submit_lock = threading.Lock()
         self._account_number: int | None = None
         self._next_sequence: int | None = None
+        self._pubkey_bytes = compressed_pubkey_from_private_key_hex(self.cfg.private_key_hex)
+        self._pubkey_any = self._pack_any(chain_keys_pb2.PubKey(key=self._pubkey_bytes))
 
     def status(self) -> dict[str, Any]:
         """Fetch CometBFT status from the configured RPC endpoint."""
@@ -147,6 +149,19 @@ class PredchainSDKv2Client:
         """Fetch a tx from the chain REST API by hash."""
         return self._request_json("GET", self._api_url(f"/cosmos/tx/v1beta1/txs/{parse.quote(tx_hash, safe='')}"))
 
+    def sync_signer_state(self, refresh_chain_id: bool = False) -> AccountInfo:
+        """Warm chain_id and signer sequence/account_number caches before hot submission starts."""
+        if refresh_chain_id:
+            self.chain_id(refresh=True)
+        else:
+            self.chain_id()
+        return self.get_account_info(refresh_sequence_cache=True)
+
+    def reset_sequence_cache(self) -> None:
+        """Drop local sequence cache so the next submit re-reads signer state from chain."""
+        self._account_number = None
+        self._next_sequence = None
+
     def wait_for_tx(self, tx_hash: str, timeout_seconds: float | None = None) -> dict[str, Any]:
         """Poll RPC /tx until the tx is committed or the timeout elapses."""
         timeout = timeout_seconds or self.cfg.default_commit_timeout_seconds
@@ -176,6 +191,25 @@ class PredchainSDKv2Client:
         commit_timeout_seconds: float | None = None,
     ) -> TxSubmission:
         """Build, sign, broadcast, and optionally wait for one native chain tx."""
+        return self.submit_messages(
+            messages=[message],
+            signer_address=signer_address,
+            gas_limit=gas_limit,
+            broadcast_mode=broadcast_mode,
+            commit_timeout_seconds=commit_timeout_seconds,
+        )
+
+    def submit_messages(
+        self,
+        messages: list[Any],
+        signer_address: str | None = None,
+        gas_limit: int | None = None,
+        broadcast_mode: BroadcastMode | None = None,
+        commit_timeout_seconds: float | None = None,
+    ) -> TxSubmission:
+        """Build, sign, and submit one native tx containing multiple protobuf messages."""
+        if not messages:
+            raise ValueError("submit_messages requires at least one message")
         signer = normalize_address(signer_address or self.cfg.signer_address)
         if signer != self.cfg.signer_address:
             raise ValueError(
@@ -183,7 +217,7 @@ class PredchainSDKv2Client:
             )
 
         requested_mode, used_mode, wait_for_commit = self._normalize_broadcast_mode(broadcast_mode)
-        gas = gas_limit or self._default_gas_limit(message)
+        gas = gas_limit or sum(self._default_gas_limit(message) for message in messages)
 
         with self._submit_lock:
             account_info = self._ensure_sequence_state()
@@ -191,13 +225,18 @@ class PredchainSDKv2Client:
             while True:
                 sequence = self._next_sequence if self._next_sequence is not None else account_info.sequence
                 tx_bytes = self._build_signed_tx_bytes(
-                    message=message,
+                    messages=messages,
                     account_number=account_info.account_number,
                     sequence=sequence,
                     gas_limit=gas,
                 )
                 local_hash = hashlib.sha256(tx_bytes).hexdigest().upper()
-                broadcast = self._broadcast_tx_bytes(tx_bytes, used_mode)
+                try:
+                    broadcast = self._broadcast_tx_bytes(tx_bytes, used_mode)
+                except PredchainHTTPError as exc:
+                    if exc.status_code == 0:
+                        self.reset_sequence_cache()
+                    raise
                 tx_response = broadcast.get("tx_response", {}) if isinstance(broadcast, dict) else {}
                 broadcast_code = self._int_value(tx_response.get("code"))
                 raw_log = str(tx_response.get("raw_log", "") or "")
@@ -467,13 +506,12 @@ class PredchainSDKv2Client:
             value=message.SerializeToString(),
         )
 
-    def _build_signed_tx_bytes(self, message: Any, account_number: int, sequence: int, gas_limit: int) -> bytes:
-        body = cosmos_tx_pb2.TxBody(messages=[self._pack_any(message)])
+    def _build_signed_tx_bytes(self, messages: list[Any], account_number: int, sequence: int, gas_limit: int) -> bytes:
+        body = cosmos_tx_pb2.TxBody(messages=[self._pack_any(message) for message in messages])
         body_bytes = body.SerializeToString()
 
-        pub_key = chain_keys_pb2.PubKey(key=compressed_pubkey_from_private_key_hex(self.cfg.private_key_hex))
         signer_info = cosmos_tx_pb2.SignerInfo(
-            public_key=self._pack_any(pub_key),
+            public_key=self._pubkey_any,
             mode_info=cosmos_tx_pb2.ModeInfo(
                 single=cosmos_tx_pb2.ModeInfo.Single(mode=signing_pb2.SIGN_MODE_DIRECT)
             ),

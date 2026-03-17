@@ -27,6 +27,7 @@ and you need to:
 - submit one chain tx
 - get back the tx hash
 - know whether the tx was accepted, committed, or failed
+- keep relayer sequence handling sane under continuous submission
 
 ## Installation
 
@@ -95,6 +96,37 @@ print(submission.status)
 print(submission.success)
 ```
 
+## Instant Submission
+
+If you want the relayer to return immediately after admission instead of waiting
+for final commit, use sync or async broadcast modes.
+
+Recommended hot path:
+
+```python
+from predchain_sdk_v2 import PredchainSDKv2Client
+
+client = PredchainSDKv2Client(...)
+client.sync_signer_state()
+
+submission = client.match_orders(
+    taker_order=taker,
+    maker_orders=[maker],
+    taker_fill_amount="500000",
+    maker_fill_amounts=["1000000"],
+    broadcast_mode="BROADCAST_MODE_SYNC",
+)
+```
+
+That gives you:
+
+- immediate tx hash
+- broadcast/checktx status
+- local sequence progression without waiting for block commit
+
+Use `BROADCAST_MODE_BLOCK` only when the caller really wants commit-time
+confirmation inline.
+
 ## Return Shape
 
 Every tx submission method returns `TxSubmission`.
@@ -132,6 +164,15 @@ The SDK serializes submissions per client instance and maintains a local
 sequence cache for the relayer signer. On a sequence mismatch it refreshes the
 signer account and retries.
 
+It also exposes:
+
+- `sync_signer_state()` to warm signer account/sequence state at worker startup
+- `reset_sequence_cache()` to force a clean re-read from chain
+
+If the broadcast request itself fails ambiguously at the transport layer, the
+SDK drops its local sequence cache before the next attempt so it does not keep
+blindly advancing stale local nonce state.
+
 This helps with the normal Cosmos relayer nonce/sequence problem, but the
 recommended production pattern is still:
 
@@ -158,9 +199,12 @@ Low-level helpers:
 - `status()`
 - `chain_id()`
 - `get_account_info()`
+- `sync_signer_state()`
+- `reset_sequence_cache()`
 - `get_tx()`
 - `wait_for_tx()`
 - `submit_message()`
+- `submit_messages()`
 - `broadcast_tx_bytes()`
 
 High-level tx methods:

@@ -24,6 +24,16 @@ Returns the cached chain id or resolves it from RPC `/status`.
 
 Fetches `account_number` and `sequence` for one chain account.
 
+### `sync_signer_state(refresh_chain_id: bool = False) -> AccountInfo`
+
+Warms the local chain id and signer sequence cache before continuous
+submissions start.
+
+### `reset_sequence_cache() -> None`
+
+Drops the local sequence cache so the next submission re-reads signer state
+from chain.
+
 ### `get_tx(tx_hash: str) -> dict`
 
 Fetches one tx from chain REST by hash.
@@ -35,6 +45,10 @@ Polls RPC `/tx` until the tx is found or times out.
 ### `submit_message(message, signer_address=None, gas_limit=None, broadcast_mode=None, commit_timeout_seconds=None) -> TxSubmission`
 
 Low-level submit path for already-built protobuf messages.
+
+### `submit_messages(messages, signer_address=None, gas_limit=None, broadcast_mode=None, commit_timeout_seconds=None) -> TxSubmission`
+
+Builds one native tx containing multiple protobuf messages.
 
 ### `broadcast_tx_bytes(tx_bytes: bytes, mode=None) -> dict`
 

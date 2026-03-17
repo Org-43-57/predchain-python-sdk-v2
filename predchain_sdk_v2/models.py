@@ -11,6 +11,8 @@ BroadcastMode = Literal[
     "BROADCAST_MODE_BLOCK",
 ]
 
+DEFAULT_CHAIN_ID = "pmtest-1"
+
 
 def to_payload(value: Any) -> Any:
     if is_dataclass(value):
@@ -74,7 +76,7 @@ class RelayerConfig:
     rpc_url: str
     signer_address: str
     private_key_hex: str
-    chain_id: str | None = None
+    chain_id: str = DEFAULT_CHAIN_ID
     timeout_seconds: float = 30.0
     default_broadcast_mode: BroadcastMode = "BROADCAST_MODE_BLOCK"
     default_commit_timeout_seconds: float = 25.0

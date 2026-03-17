@@ -43,7 +43,7 @@ from .messages import (
     build_msg_update_testnetmint_admin,
     normalize_address,
 )
-from .models import AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, RelayerConfig, TxSubmission, ValidatorSlot
+from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, RelayerConfig, TxSubmission, ValidatorSlot
 
 
 class PredchainSDKv2Client:
@@ -89,7 +89,6 @@ class PredchainSDKv2Client:
         rpc_url: str,
         signer_address: str,
         private_key_hex: str,
-        chain_id: str | None = None,
         timeout_seconds: float = 30.0,
         default_broadcast_mode: BroadcastMode = "BROADCAST_MODE_BLOCK",
         default_commit_timeout_seconds: float = 25.0,
@@ -100,7 +99,7 @@ class PredchainSDKv2Client:
             rpc_url=rpc_url.rstrip("/"),
             signer_address=normalize_address(signer_address),
             private_key_hex=private_key_hex,
-            chain_id=chain_id,
+            chain_id=DEFAULT_CHAIN_ID,
             timeout_seconds=timeout_seconds,
             default_broadcast_mode=default_broadcast_mode,
             default_commit_timeout_seconds=default_commit_timeout_seconds,
@@ -146,16 +145,9 @@ class PredchainSDKv2Client:
             "signer": signer_data,
         }
 
-    def chain_id(self, refresh: bool = False) -> str:
-        """Return the configured chain id, querying RPC status if needed."""
-        if self.cfg.chain_id and not refresh:
-            return self.cfg.chain_id
-        payload = self.status()
-        chain_id = str(payload.get("result", {}).get("node_info", {}).get("network", "")).strip()
-        if not chain_id:
-            raise RuntimeError("failed to resolve chain_id from rpc /status")
-        self.cfg.chain_id = chain_id
-        return chain_id
+    def chain_id(self) -> str:
+        """Return the fixed Predchain chain id used by this SDK."""
+        return self.cfg.chain_id
 
     def get_account_info(self, address: str | None = None, refresh_sequence_cache: bool = False) -> AccountInfo:
         """Fetch account_number and sequence for the signer or a target account."""
@@ -199,16 +191,18 @@ class PredchainSDKv2Client:
         """Fetch a tx from the chain REST API by hash."""
         return self._request_json("GET", self._api_url(f"/cosmos/tx/v1beta1/txs/{parse.quote(tx_hash, safe='')}"))
 
-    def sync_signer_state(self, refresh_chain_id: bool = False) -> AccountInfo:
-        """Warm chain_id and signer sequence/account_number caches before hot submission starts."""
-        if refresh_chain_id:
-            self.chain_id(refresh=True)
-        else:
-            self.chain_id()
+    def sync_signer_state(self) -> AccountInfo:
+        """Warm signer account_number/sequence caches before hot submission starts."""
         return self.get_account_info(refresh_sequence_cache=True)
 
     def reset_sequence_cache(self) -> None:
-        """Drop local sequence cache so the next submit re-reads signer state from chain."""
+        """
+        Drop local signer sequence cache so the next submit re-reads signer state from chain.
+
+        The SDK already calls this automatically after ambiguous transport failures.
+        Most callers should only use it as a manual recovery hook when the same
+        relayer key is being used by some other process.
+        """
         self._account_number = None
         self._next_sequence = None
 

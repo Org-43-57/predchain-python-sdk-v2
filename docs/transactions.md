@@ -147,9 +147,12 @@ Use this for monitoring or startup checks.
 client.health()
 ```
 
-### `chain_id(refresh: bool = False) -> str`
+### `chain_id() -> str`
 
-Returns the cached chain id or refreshes it from RPC.
+Returns the fixed Predchain chain id used by this SDK.
+
+This SDK is intentionally single-chain for now, so callers do not need to
+configure or refresh chain id dynamically.
 
 ```python
 client.chain_id()
@@ -187,13 +190,12 @@ Use this when debugging relayer nonce/sequence state.
 client.signer_status()
 ```
 
-### `sync_signer_state(refresh_chain_id: bool = False) -> AccountInfo`
+### `sync_signer_state() -> AccountInfo`
 
 Warm-up method for hot relayer workers.
 
 What it does:
 
-- resolves chain id if needed
 - fetches signer account state
 - fills local sequence cache
 
@@ -207,7 +209,10 @@ client.sync_signer_state()
 
 Drops the local cached sequence state.
 
-Use this when:
+Normal callers usually do not need this. The SDK already uses it internally
+after ambiguous transport failures.
+
+Use this manually only when:
 
 - you suspect out-of-band relayer submissions happened
 - another service used the same relayer key

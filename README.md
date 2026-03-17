@@ -9,6 +9,7 @@ Important behavior:
 
 - It talks directly to the chain REST/RPC endpoints.
 - It does not depend on the demo API.
+- It is fixed to the current Predchain chain id (`pmtest-1`).
 - It does not sign orders.
 - It expects any settlement orders passed into `match_orders()` to already
   contain valid off-chain signatures.
@@ -167,7 +168,8 @@ signer account and retries.
 It also exposes:
 
 - `sync_signer_state()` to warm signer account/sequence state at worker startup
-- `reset_sequence_cache()` to force a clean re-read from chain
+- `reset_sequence_cache()` as a manual recovery hook if the same relayer key is
+  ever touched by another process
 
 If the broadcast request itself fails ambiguously at the transport layer, the
 SDK drops its local sequence cache before the next attempt so it does not keep
@@ -185,7 +187,7 @@ Useful relayer helpers:
 - `signer_status()`
 - `balances()`
 - `sync_signer_state()`
-- `reset_sequence_cache()`
+- `reset_sequence_cache()` for advanced/manual recovery only
 - `submit_messages()`
 
 ## Modules Covered
@@ -212,7 +214,7 @@ Low-level helpers:
 - `signer_status()`
 - `balances()`
 - `sync_signer_state()`
-- `reset_sequence_cache()`
+- `reset_sequence_cache()` if you need to discard local nonce state manually
 - `get_tx()`
 - `wait_for_tx()`
 - `submit_message()`

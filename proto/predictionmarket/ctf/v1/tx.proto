@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package predictionmarket.ctf.v1;
+
+option go_package = "github.com/Org-43-57/predchaind/proto/predictionmarket/ctf/v1;ctfv1";
+
+import "cosmos/msg/v1/msg.proto";
+
+service Msg {
+  rpc SplitPosition(MsgSplitPosition) returns (MsgSplitPositionResponse);
+  rpc MergePositions(MsgMergePositions) returns (MsgMergePositionsResponse);
+  rpc RedeemPositions(MsgRedeemPositions) returns (MsgRedeemPositionsResponse);
+}
+
+message MsgSplitPosition {
+  option (cosmos.msg.v1.signer) = "holder";
+
+  string holder = 1;
+  string collateral_denom = 2;
+  string parent_collection_id = 3;
+  string condition_id = 4;
+  repeated uint32 partition = 5;
+  string amount = 6;
+}
+
+message MsgSplitPositionResponse {
+  repeated string position_ids = 1;
+  repeated string denoms = 2;
+}
+
+message MsgMergePositions {
+  option (cosmos.msg.v1.signer) = "holder";
+
+  string holder = 1;
+  string collateral_denom = 2;
+  string parent_collection_id = 3;
+  string condition_id = 4;
+  repeated uint32 partition = 5;
+  string amount = 6;
+}
+
+message MsgMergePositionsResponse {}
+
+message MsgRedeemPositions {
+  option (cosmos.msg.v1.signer) = "holder";
+
+  string holder = 1;
+  string collateral_denom = 2;
+  string parent_collection_id = 3;
+  string condition_id = 4;
+  repeated uint32 index_sets = 5;
+}
+
+message MsgRedeemPositionsResponse {
+  string amount = 1;
+  string denom = 2;
+}

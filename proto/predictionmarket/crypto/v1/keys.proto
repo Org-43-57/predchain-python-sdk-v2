@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package predictionmarket.crypto.v1.ethsecp256k1;
+
+option go_package = "github.com/Org-43-57/predchaind/crypto/ethsecp256k1;ethsecp256k1";
+
+message PubKey {
+  bytes key = 1;
+}
+
+message PrivKey {
+  bytes key = 1;
+}

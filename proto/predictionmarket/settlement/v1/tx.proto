@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package predictionmarket.settlement.v1;
+
+option go_package = "github.com/Org-43-57/predchaind/proto/predictionmarket/settlement/v1;settlementv1";
+
+import "cosmos/msg/v1/msg.proto";
+
+service Msg {
+  rpc MatchOrders(MsgMatchOrders) returns (MsgMatchOrdersResponse);
+  rpc CancelOrders(MsgCancelOrders) returns (MsgCancelOrdersResponse);
+  rpc InvalidateNonce(MsgInvalidateNonce) returns (MsgInvalidateNonceResponse);
+  rpc ApproveAgent(MsgApproveAgent) returns (MsgApproveAgentResponse);
+  rpc RevokeAgent(MsgRevokeAgent) returns (MsgRevokeAgentResponse);
+  rpc PauseSettlement(MsgPauseSettlement) returns (MsgPauseSettlementResponse);
+  rpc SetMatcherAuthorization(MsgSetMatcherAuthorization) returns (MsgSetMatcherAuthorizationResponse);
+}
+
+message AgentAuthorization {
+  string principal = 1;
+  string agent = 2;
+  int64 expires_at_unix = 3;
+  bool active = 4;
+  bool expired = 5;
+}
+
+message Order {
+  uint64 salt = 1;
+  string maker = 2;
+  string signer = 3;
+  string taker = 4;
+  string token_id = 5;
+  string maker_amount = 6;
+  string taker_amount = 7;
+  int64 expiration = 8;
+  uint64 nonce = 9;
+  uint32 fee_rate_bps = 10;
+  string side = 11;
+  string signature_type = 12;
+  bytes signature = 13;
+}
+
+message MsgMatchOrders {
+  option (cosmos.msg.v1.signer) = "submitter";
+
+  string submitter = 1;
+  Order taker_order = 2;
+  repeated Order maker_orders = 3;
+  string taker_fill_amount = 4;
+  repeated string maker_fill_amounts = 5;
+  string surplus_recipient = 6;
+}
+
+message MsgMatchOrdersResponse {
+  string match_type = 1;
+  repeated string refunds = 2;
+  string fee_collected = 3;
+}
+
+message MsgCancelOrders {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer = 1;
+  repeated string order_hashes = 2;
+  string principal = 3;
+}
+
+message MsgCancelOrdersResponse {}
+
+message MsgInvalidateNonce {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer = 1;
+  uint64 min_valid_nonce = 2;
+  string principal = 3;
+}
+
+message MsgInvalidateNonceResponse {}
+
+message MsgApproveAgent {
+  option (cosmos.msg.v1.signer) = "principal";
+
+  string principal = 1;
+  string agent = 2;
+  int64 expires_at_unix = 3;
+}
+
+message MsgApproveAgentResponse {
+  AgentAuthorization authorization = 1;
+}
+
+message MsgRevokeAgent {
+  option (cosmos.msg.v1.signer) = "principal";
+
+  string principal = 1;
+  string agent = 2;
+}
+
+message MsgRevokeAgentResponse {}
+
+message MsgPauseSettlement {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  bool paused = 2;
+}
+
+message MsgPauseSettlementResponse {}
+
+message MsgSetMatcherAuthorization {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string matcher = 2;
+  bool allowed = 3;
+}
+
+message MsgSetMatcherAuthorizationResponse {
+  repeated string allowed_matchers = 1;
+}

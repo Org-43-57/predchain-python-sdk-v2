@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package predictionmarket.market.v1;
+
+option go_package = "github.com/Org-43-57/predchaind/proto/predictionmarket/market/v1;marketv1";
+
+import "cosmos/msg/v1/msg.proto";
+
+service Msg {
+  rpc CreateMarket(MsgCreateMarket) returns (MsgCreateMarketResponse);
+  rpc CreateParlayMarket(MsgCreateParlayMarket) returns (MsgCreateParlayMarketResponse);
+  rpc CreateNegRiskGroup(MsgCreateNegRiskGroup) returns (MsgCreateNegRiskGroupResponse);
+  rpc UpdateAdmin(MsgUpdateAdmin) returns (MsgUpdateAdminResponse);
+  rpc ConvertNegRiskPosition(MsgConvertNegRiskPosition) returns (MsgConvertNegRiskPositionResponse);
+  rpc CollapseParlayPosition(MsgCollapseParlayPosition) returns (MsgCollapseParlayPositionResponse);
+  rpc PauseMarket(MsgPauseMarket) returns (MsgPauseMarketResponse);
+  rpc SetMarketFee(MsgSetMarketFee) returns (MsgSetMarketFeeResponse);
+  rpc ResolveMarket(MsgResolveMarket) returns (MsgResolveMarketResponse);
+}
+
+message ParlayLeg {
+  uint64 market_id = 1;
+  string required_outcome = 2;
+}
+
+message MsgCreateMarket {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string question = 2;
+  string metadata_uri = 3;
+  reserved 4;
+  uint32 taker_fee_bps = 5;
+}
+
+message MsgCreateMarketResponse {
+  uint64 market_id = 1;
+  string condition_id = 2;
+  string yes_position_id = 3;
+  string no_position_id = 4;
+}
+
+message MsgCreateParlayMarket {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string question = 2;
+  string metadata_uri = 3;
+  reserved 4;
+  uint32 taker_fee_bps = 5;
+  repeated ParlayLeg legs = 6;
+}
+
+message MsgCreateParlayMarketResponse {
+  uint64 market_id = 1;
+  string condition_id = 2;
+  string yes_position_id = 3;
+  string no_position_id = 4;
+}
+
+message MsgCreateNegRiskGroup {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string title = 2;
+  string metadata_uri = 3;
+  repeated uint64 market_ids = 4;
+}
+
+message MsgCreateNegRiskGroupResponse {
+  uint64 group_id = 1;
+}
+
+message MsgUpdateAdmin {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string new_admin = 2;
+}
+
+message MsgUpdateAdminResponse {}
+
+message MsgConvertNegRiskPosition {
+  option (cosmos.msg.v1.signer) = "holder";
+
+  string holder = 1;
+  uint64 group_id = 2;
+  uint64 anchor_market_id = 3;
+  string amount = 4;
+  string direction = 5;
+}
+
+message MsgConvertNegRiskPositionResponse {
+  repeated string position_ids = 1;
+  repeated string denoms = 2;
+}
+
+message MsgCollapseParlayPosition {
+  option (cosmos.msg.v1.signer) = "holder";
+
+  string holder = 1;
+  uint64 parlay_market_id = 2;
+  string amount = 3;
+}
+
+message MsgCollapseParlayPositionResponse {
+  uint64 target_market_id = 1;
+  string target_outcome = 2;
+  string position_id = 3;
+  string denom = 4;
+}
+
+message MsgPauseMarket {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 market_id = 2;
+  bool paused = 3;
+}
+
+message MsgPauseMarketResponse {}
+
+message MsgSetMarketFee {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 market_id = 2;
+  uint32 taker_fee_bps = 3;
+}
+
+message MsgSetMarketFeeResponse {}
+
+message MsgResolveMarket {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 market_id = 2;
+  string winning_outcome = 3;
+  string resolution_metadata_uri = 4;
+}
+
+message MsgResolveMarketResponse {}

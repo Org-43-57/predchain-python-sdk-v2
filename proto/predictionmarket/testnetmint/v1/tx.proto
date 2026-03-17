@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package predictionmarket.testnetmint.v1;
+
+option go_package = "github.com/Org-43-57/predchaind/proto/predictionmarket/testnetmint/v1;testnetmintv1";
+
+import "cosmos/msg/v1/msg.proto";
+
+service Msg {
+  rpc AdminMintUSDC(MsgAdminMintUSDC) returns (MsgAdminMintUSDCResponse);
+  rpc AdminBurnUSDC(MsgAdminBurnUSDC) returns (MsgAdminBurnUSDCResponse);
+  rpc UpdateAdmin(MsgUpdateAdmin) returns (MsgUpdateAdminResponse);
+}
+
+message MsgAdminMintUSDC {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string to = 2;
+  string amount = 3;
+}
+
+message MsgAdminMintUSDCResponse {}
+
+message MsgAdminBurnUSDC {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string from = 2;
+  string amount = 3;
+}
+
+message MsgAdminBurnUSDCResponse {}
+
+message MsgUpdateAdmin {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string new_admin = 2;
+}
+
+message MsgUpdateAdminResponse {}

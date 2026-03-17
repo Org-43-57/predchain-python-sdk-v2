@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package predictionmarket.poa.v1;
+
+option go_package = "github.com/Org-43-57/predchaind/proto/predictionmarket/poa/v1;poav1";
+
+import "cosmos/msg/v1/msg.proto";
+
+service Msg {
+  rpc SetValidatorSet(MsgSetValidatorSet) returns (MsgSetValidatorSetResponse);
+  rpc UpdateAdmin(MsgUpdateAdmin) returns (MsgUpdateAdminResponse);
+}
+
+message ValidatorSlot {
+  uint32 index = 1;
+  string name = 2;
+  string consensus_address = 3;
+  bytes consensus_pub_key = 4;
+  int64 power = 5;
+}
+
+message MsgSetValidatorSet {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  repeated ValidatorSlot validators = 2;
+}
+
+message MsgSetValidatorSetResponse {}
+
+message MsgUpdateAdmin {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string new_admin = 2;
+}
+
+message MsgUpdateAdminResponse {}

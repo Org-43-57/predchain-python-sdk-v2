@@ -1,0 +1,54 @@
+[project]
+name = "predchain-python-sdk-v2"
+version = "0.1.0"
+description = "Predchain Python SDK v2 with direct-chain relayer submission"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Org-43-57" }
+]
+dependencies = [
+  "protobuf>=5,<7",
+  "coincurve>=21,<22",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+  "predchain_sdk_v2",
+  "amino",
+  "cosmos",
+  "cosmos.base",
+  "cosmos.base.v1beta1",
+  "cosmos.auth",
+  "cosmos.auth.v1beta1",
+  "cosmos.bank",
+  "cosmos.bank.v1beta1",
+  "cosmos.crypto",
+  "cosmos.crypto.multisig",
+  "cosmos.crypto.multisig.v1beta1",
+  "cosmos.msg",
+  "cosmos.msg.v1",
+  "cosmos.tx",
+  "cosmos.tx.signing",
+  "cosmos.tx.signing.v1beta1",
+  "cosmos.tx.v1beta1",
+  "cosmos_proto",
+  "gogoproto",
+  "predictionmarket",
+  "predictionmarket.crypto",
+  "predictionmarket.crypto.v1",
+  "predictionmarket.market",
+  "predictionmarket.market.v1",
+  "predictionmarket.ctf",
+  "predictionmarket.ctf.v1",
+  "predictionmarket.settlement",
+  "predictionmarket.settlement.v1",
+  "predictionmarket.testnetmint",
+  "predictionmarket.testnetmint.v1",
+  "predictionmarket.poa",
+  "predictionmarket.poa.v1",
+]

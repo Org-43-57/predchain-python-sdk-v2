@@ -130,6 +130,16 @@ def build_msg_create_neg_risk_group(authority: str, title: str, metadata_uri: st
     )
 
 
+def build_msg_update_neg_risk_group(authority: str, group_id: int, add_market_ids: Sequence[int], title: str = "", metadata_uri: str = "") -> market_tx_pb2.MsgUpdateNegRiskGroup:
+    return market_tx_pb2.MsgUpdateNegRiskGroup(
+        authority=normalize_address(authority),
+        group_id=int(group_id),
+        title=str(title),
+        metadata_uri=str(metadata_uri),
+        add_market_ids=[int(market_id) for market_id in add_market_ids],
+    )
+
+
 def build_msg_update_market_admin(authority: str, new_admin: str) -> market_tx_pb2.MsgUpdateAdmin:
     return market_tx_pb2.MsgUpdateAdmin(authority=normalize_address(authority), new_admin=normalize_address(new_admin))
 

@@ -10,6 +10,7 @@ service Msg {
   rpc CreateMarket(MsgCreateMarket) returns (MsgCreateMarketResponse);
   rpc CreateParlayMarket(MsgCreateParlayMarket) returns (MsgCreateParlayMarketResponse);
   rpc CreateNegRiskGroup(MsgCreateNegRiskGroup) returns (MsgCreateNegRiskGroupResponse);
+  rpc UpdateNegRiskGroup(MsgUpdateNegRiskGroup) returns (MsgUpdateNegRiskGroupResponse);
   rpc UpdateAdmin(MsgUpdateAdmin) returns (MsgUpdateAdminResponse);
   rpc ConvertNegRiskPosition(MsgConvertNegRiskPosition) returns (MsgConvertNegRiskPositionResponse);
   rpc CollapseParlayPosition(MsgCollapseParlayPosition) returns (MsgCollapseParlayPositionResponse);
@@ -69,6 +70,21 @@ message MsgCreateNegRiskGroup {
 
 message MsgCreateNegRiskGroupResponse {
   uint64 group_id = 1;
+}
+
+message MsgUpdateNegRiskGroup {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 group_id = 2;
+  string title = 3;
+  string metadata_uri = 4;
+  repeated uint64 add_market_ids = 5;
+}
+
+message MsgUpdateNegRiskGroupResponse {
+  uint64 group_id = 1;
+  repeated uint64 market_ids = 2;
 }
 
 message MsgUpdateAdmin {

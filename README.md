@@ -230,6 +230,7 @@ High-level tx methods:
 - `create_market()`
 - `create_parlay_market()`
 - `create_neg_risk_group()`
+- `update_neg_risk_group()`
 - `update_market_admin()`
 - `convert_neg_risk_position()`
 - `collapse_parlay_position()`

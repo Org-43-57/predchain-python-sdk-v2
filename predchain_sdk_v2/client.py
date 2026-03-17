@@ -39,6 +39,7 @@ from .messages import (
     build_msg_set_validator_set,
     build_msg_split_position,
     build_msg_update_market_admin,
+    build_msg_update_neg_risk_group,
     build_msg_update_poa_admin,
     build_msg_update_testnetmint_admin,
     normalize_address,
@@ -63,6 +64,7 @@ class PredchainSDKv2Client:
         "predictionmarket.market.v1.MsgCreateMarket": 250_000,
         "predictionmarket.market.v1.MsgCreateParlayMarket": 400_000,
         "predictionmarket.market.v1.MsgCreateNegRiskGroup": 300_000,
+        "predictionmarket.market.v1.MsgUpdateNegRiskGroup": 250_000,
         "predictionmarket.market.v1.MsgUpdateAdmin": 160_000,
         "predictionmarket.market.v1.MsgConvertNegRiskPosition": 300_000,
         "predictionmarket.market.v1.MsgCollapseParlayPosition": 260_000,
@@ -400,6 +402,11 @@ class PredchainSDKv2Client:
     def create_neg_risk_group(self, title: str, market_ids: list[int], metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Create a neg-risk group on-chain."""
         msg = build_msg_create_neg_risk_group(authority or self.cfg.signer_address, title, metadata_uri, market_ids)
+        return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+
+    def update_neg_risk_group(self, group_id: int, add_market_ids: list[int] | None = None, title: str = "", metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+        """Append markets to an existing neg-risk group and optionally update its metadata."""
+        msg = build_msg_update_neg_risk_group(authority or self.cfg.signer_address, group_id, add_market_ids or [], title, metadata_uri)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def update_market_admin(self, new_admin: str, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:

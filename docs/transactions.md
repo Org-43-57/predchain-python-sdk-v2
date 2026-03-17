@@ -370,6 +370,25 @@ Fields:
 
 Creates one neg-risk group.
 
+Fields:
+
+- `title`: display title for the group
+- `market_ids`: initial member markets
+- `metadata_uri`: optional metadata pointer
+- optional `authority`: explicit admin signer override
+
+### `update_neg_risk_group(group_id, add_market_ids=None, title="", metadata_uri="", authority=None, gas_limit=None, broadcast_mode=None)`
+
+Appends new markets to one existing neg-risk group and optionally updates its title or metadata URI.
+
+Fields:
+
+- `group_id`: existing neg-risk group to update
+- `add_market_ids`: optional new markets to append to the group
+- `title`: optional replacement title when non-empty
+- `metadata_uri`: optional replacement metadata URI when non-empty
+- optional `authority`: explicit admin signer override
+
 ### `update_market_admin(new_admin, authority=None, gas_limit=None, broadcast_mode=None)`
 
 Rotates the market module admin.

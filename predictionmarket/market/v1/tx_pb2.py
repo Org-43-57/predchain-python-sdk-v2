@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from cosmos.msg.v1 import msg_pb2 as cosmos_dot_msg_dot_v1_dot_msg__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#predictionmarket/market/v1/tx.proto\x12\x1apredictionmarket.market.v1\x1a\x17\x63osmos/msg/v1/msg.proto\"8\n\tParlayLeg\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x18\n\x10required_outcome\x18\x02 \x01(\t\"y\n\x0fMsgCreateMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x10\n\x08question\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x15\n\rtaker_fee_bps\x18\x05 \x01(\r:\x0e\x82\xe7\xb0*\tauthorityJ\x04\x08\x04\x10\x05\"s\n\x17MsgCreateMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x14\n\x0c\x63ondition_id\x18\x02 \x01(\t\x12\x17\n\x0fyes_position_id\x18\x03 \x01(\t\x12\x16\n\x0eno_position_id\x18\x04 \x01(\t\"\xb4\x01\n\x15MsgCreateParlayMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x10\n\x08question\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x15\n\rtaker_fee_bps\x18\x05 \x01(\r\x12\x33\n\x04legs\x18\x06 \x03(\x0b\x32%.predictionmarket.market.v1.ParlayLeg:\x0e\x82\xe7\xb0*\tauthorityJ\x04\x08\x04\x10\x05\"y\n\x1dMsgCreateParlayMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x14\n\x0c\x63ondition_id\x18\x02 \x01(\t\x12\x17\n\x0fyes_position_id\x18\x03 \x01(\t\x12\x16\n\x0eno_position_id\x18\x04 \x01(\t\"s\n\x15MsgCreateNegRiskGroup\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x12\n\nmarket_ids\x18\x04 \x03(\x04:\x0e\x82\xe7\xb0*\tauthority\"1\n\x1dMsgCreateNegRiskGroupResponse\x12\x10\n\x08group_id\x18\x01 \x01(\x04\"F\n\x0eMsgUpdateAdmin\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tnew_admin\x18\x02 \x01(\t:\x0e\x82\xe7\xb0*\tauthority\"\x18\n\x16MsgUpdateAdminResponse\"\x87\x01\n\x19MsgConvertNegRiskPosition\x12\x0e\n\x06holder\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\x04\x12\x18\n\x10\x61nchor_market_id\x18\x03 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\t\x12\x11\n\tdirection\x18\x05 \x01(\t:\x0b\x82\xe7\xb0*\x06holder\"I\n!MsgConvertNegRiskPositionResponse\x12\x14\n\x0cposition_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x64\x65noms\x18\x02 \x03(\t\"b\n\x19MsgCollapseParlayPosition\x12\x0e\n\x06holder\x18\x01 \x01(\t\x12\x18\n\x10parlay_market_id\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06holder\"y\n!MsgCollapseParlayPositionResponse\x12\x18\n\x10target_market_id\x18\x01 \x01(\x04\x12\x16\n\x0etarget_outcome\x18\x02 \x01(\t\x12\x13\n\x0bposition_id\x18\x03 \x01(\t\x12\r\n\x05\x64\x65nom\x18\x04 \x01(\t\"V\n\x0eMsgPauseMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x0e\n\x06paused\x18\x03 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\"\x18\n\x16MsgPauseMarketResponse\"^\n\x0fMsgSetMarketFee\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x15\n\rtaker_fee_bps\x18\x03 \x01(\r:\x0e\x82\xe7\xb0*\tauthority\"\x19\n\x17MsgSetMarketFeeResponse\"\x82\x01\n\x10MsgResolveMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x17\n\x0fwinning_outcome\x18\x03 \x01(\t\x12\x1f\n\x17resolution_metadata_uri\x18\x04 \x01(\t:\x0e\x82\xe7\xb0*\tauthority\"\x1a\n\x18MsgResolveMarketResponse2\xe8\x08\n\x03Msg\x12p\n\x0c\x43reateMarket\x12+.predictionmarket.market.v1.MsgCreateMarket\x1a\x33.predictionmarket.market.v1.MsgCreateMarketResponse\x12\x82\x01\n\x12\x43reateParlayMarket\x12\x31.predictionmarket.market.v1.MsgCreateParlayMarket\x1a\x39.predictionmarket.market.v1.MsgCreateParlayMarketResponse\x12\x82\x01\n\x12\x43reateNegRiskGroup\x12\x31.predictionmarket.market.v1.MsgCreateNegRiskGroup\x1a\x39.predictionmarket.market.v1.MsgCreateNegRiskGroupResponse\x12m\n\x0bUpdateAdmin\x12*.predictionmarket.market.v1.MsgUpdateAdmin\x1a\x32.predictionmarket.market.v1.MsgUpdateAdminResponse\x12\x8e\x01\n\x16\x43onvertNegRiskPosition\x12\x35.predictionmarket.market.v1.MsgConvertNegRiskPosition\x1a=.predictionmarket.market.v1.MsgConvertNegRiskPositionResponse\x12\x8e\x01\n\x16\x43ollapseParlayPosition\x12\x35.predictionmarket.market.v1.MsgCollapseParlayPosition\x1a=.predictionmarket.market.v1.MsgCollapseParlayPositionResponse\x12m\n\x0bPauseMarket\x12*.predictionmarket.market.v1.MsgPauseMarket\x1a\x32.predictionmarket.market.v1.MsgPauseMarketResponse\x12p\n\x0cSetMarketFee\x12+.predictionmarket.market.v1.MsgSetMarketFee\x1a\x33.predictionmarket.market.v1.MsgSetMarketFeeResponse\x12s\n\rResolveMarket\x12,.predictionmarket.market.v1.MsgResolveMarket\x1a\x34.predictionmarket.market.v1.MsgResolveMarketResponseBKZIgithub.com/Org-43-57/predchaind/proto/predictionmarket/market/v1;marketv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#predictionmarket/market/v1/tx.proto\x12\x1apredictionmarket.market.v1\x1a\x17\x63osmos/msg/v1/msg.proto\"8\n\tParlayLeg\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x18\n\x10required_outcome\x18\x02 \x01(\t\"y\n\x0fMsgCreateMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x10\n\x08question\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x15\n\rtaker_fee_bps\x18\x05 \x01(\r:\x0e\x82\xe7\xb0*\tauthorityJ\x04\x08\x04\x10\x05\"s\n\x17MsgCreateMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x14\n\x0c\x63ondition_id\x18\x02 \x01(\t\x12\x17\n\x0fyes_position_id\x18\x03 \x01(\t\x12\x16\n\x0eno_position_id\x18\x04 \x01(\t\"\xb4\x01\n\x15MsgCreateParlayMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x10\n\x08question\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x15\n\rtaker_fee_bps\x18\x05 \x01(\r\x12\x33\n\x04legs\x18\x06 \x03(\x0b\x32%.predictionmarket.market.v1.ParlayLeg:\x0e\x82\xe7\xb0*\tauthorityJ\x04\x08\x04\x10\x05\"y\n\x1dMsgCreateParlayMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x14\n\x0c\x63ondition_id\x18\x02 \x01(\t\x12\x17\n\x0fyes_position_id\x18\x03 \x01(\t\x12\x16\n\x0eno_position_id\x18\x04 \x01(\t\"s\n\x15MsgCreateNegRiskGroup\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x03 \x01(\t\x12\x12\n\nmarket_ids\x18\x04 \x03(\x04:\x0e\x82\xe7\xb0*\tauthority\"1\n\x1dMsgCreateNegRiskGroupResponse\x12\x10\n\x08group_id\x18\x01 \x01(\x04\"\x89\x01\n\x15MsgUpdateNegRiskGroup\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\x04\x12\r\n\x05title\x18\x03 \x01(\t\x12\x14\n\x0cmetadata_uri\x18\x04 \x01(\t\x12\x16\n\x0e\x61\x64\x64_market_ids\x18\x05 \x03(\x04:\x0e\x82\xe7\xb0*\tauthority\"E\n\x1dMsgUpdateNegRiskGroupResponse\x12\x10\n\x08group_id\x18\x01 \x01(\x04\x12\x12\n\nmarket_ids\x18\x02 \x03(\x04\"F\n\x0eMsgUpdateAdmin\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tnew_admin\x18\x02 \x01(\t:\x0e\x82\xe7\xb0*\tauthority\"\x18\n\x16MsgUpdateAdminResponse\"\x87\x01\n\x19MsgConvertNegRiskPosition\x12\x0e\n\x06holder\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\x04\x12\x18\n\x10\x61nchor_market_id\x18\x03 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\t\x12\x11\n\tdirection\x18\x05 \x01(\t:\x0b\x82\xe7\xb0*\x06holder\"I\n!MsgConvertNegRiskPositionResponse\x12\x14\n\x0cposition_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x64\x65noms\x18\x02 \x03(\t\"b\n\x19MsgCollapseParlayPosition\x12\x0e\n\x06holder\x18\x01 \x01(\t\x12\x18\n\x10parlay_market_id\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06holder\"y\n!MsgCollapseParlayPositionResponse\x12\x18\n\x10target_market_id\x18\x01 \x01(\x04\x12\x16\n\x0etarget_outcome\x18\x02 \x01(\t\x12\x13\n\x0bposition_id\x18\x03 \x01(\t\x12\r\n\x05\x64\x65nom\x18\x04 \x01(\t\"V\n\x0eMsgPauseMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x0e\n\x06paused\x18\x03 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\"\x18\n\x16MsgPauseMarketResponse\"^\n\x0fMsgSetMarketFee\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x15\n\rtaker_fee_bps\x18\x03 \x01(\r:\x0e\x82\xe7\xb0*\tauthority\"\x19\n\x17MsgSetMarketFeeResponse\"\x82\x01\n\x10MsgResolveMarket\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x11\n\tmarket_id\x18\x02 \x01(\x04\x12\x17\n\x0fwinning_outcome\x18\x03 \x01(\t\x12\x1f\n\x17resolution_metadata_uri\x18\x04 \x01(\t:\x0e\x82\xe7\xb0*\tauthority\"\x1a\n\x18MsgResolveMarketResponse2\xed\t\n\x03Msg\x12p\n\x0c\x43reateMarket\x12+.predictionmarket.market.v1.MsgCreateMarket\x1a\x33.predictionmarket.market.v1.MsgCreateMarketResponse\x12\x82\x01\n\x12\x43reateParlayMarket\x12\x31.predictionmarket.market.v1.MsgCreateParlayMarket\x1a\x39.predictionmarket.market.v1.MsgCreateParlayMarketResponse\x12\x82\x01\n\x12\x43reateNegRiskGroup\x12\x31.predictionmarket.market.v1.MsgCreateNegRiskGroup\x1a\x39.predictionmarket.market.v1.MsgCreateNegRiskGroupResponse\x12\x82\x01\n\x12UpdateNegRiskGroup\x12\x31.predictionmarket.market.v1.MsgUpdateNegRiskGroup\x1a\x39.predictionmarket.market.v1.MsgUpdateNegRiskGroupResponse\x12m\n\x0bUpdateAdmin\x12*.predictionmarket.market.v1.MsgUpdateAdmin\x1a\x32.predictionmarket.market.v1.MsgUpdateAdminResponse\x12\x8e\x01\n\x16\x43onvertNegRiskPosition\x12\x35.predictionmarket.market.v1.MsgConvertNegRiskPosition\x1a=.predictionmarket.market.v1.MsgConvertNegRiskPositionResponse\x12\x8e\x01\n\x16\x43ollapseParlayPosition\x12\x35.predictionmarket.market.v1.MsgCollapseParlayPosition\x1a=.predictionmarket.market.v1.MsgCollapseParlayPositionResponse\x12m\n\x0bPauseMarket\x12*.predictionmarket.market.v1.MsgPauseMarket\x1a\x32.predictionmarket.market.v1.MsgPauseMarketResponse\x12p\n\x0cSetMarketFee\x12+.predictionmarket.market.v1.MsgSetMarketFee\x1a\x33.predictionmarket.market.v1.MsgSetMarketFeeResponse\x12s\n\rResolveMarket\x12,.predictionmarket.market.v1.MsgResolveMarket\x1a\x34.predictionmarket.market.v1.MsgResolveMarketResponseBKZIgithub.com/Org-43-57/predchaind/proto/predictionmarket/market/v1;marketv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MSGCREATEPARLAYMARKET']._serialized_options = b'\202\347\260*\tauthority'
   _globals['_MSGCREATENEGRISKGROUP']._loaded_options = None
   _globals['_MSGCREATENEGRISKGROUP']._serialized_options = b'\202\347\260*\tauthority'
+  _globals['_MSGUPDATENEGRISKGROUP']._loaded_options = None
+  _globals['_MSGUPDATENEGRISKGROUP']._serialized_options = b'\202\347\260*\tauthority'
   _globals['_MSGUPDATEADMIN']._loaded_options = None
   _globals['_MSGUPDATEADMIN']._serialized_options = b'\202\347\260*\tauthority'
   _globals['_MSGCONVERTNEGRISKPOSITION']._loaded_options = None
@@ -65,30 +67,34 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MSGCREATENEGRISKGROUP']._serialized_end=811
   _globals['_MSGCREATENEGRISKGROUPRESPONSE']._serialized_start=813
   _globals['_MSGCREATENEGRISKGROUPRESPONSE']._serialized_end=862
-  _globals['_MSGUPDATEADMIN']._serialized_start=864
-  _globals['_MSGUPDATEADMIN']._serialized_end=934
-  _globals['_MSGUPDATEADMINRESPONSE']._serialized_start=936
-  _globals['_MSGUPDATEADMINRESPONSE']._serialized_end=960
-  _globals['_MSGCONVERTNEGRISKPOSITION']._serialized_start=963
-  _globals['_MSGCONVERTNEGRISKPOSITION']._serialized_end=1098
-  _globals['_MSGCONVERTNEGRISKPOSITIONRESPONSE']._serialized_start=1100
-  _globals['_MSGCONVERTNEGRISKPOSITIONRESPONSE']._serialized_end=1173
-  _globals['_MSGCOLLAPSEPARLAYPOSITION']._serialized_start=1175
-  _globals['_MSGCOLLAPSEPARLAYPOSITION']._serialized_end=1273
-  _globals['_MSGCOLLAPSEPARLAYPOSITIONRESPONSE']._serialized_start=1275
-  _globals['_MSGCOLLAPSEPARLAYPOSITIONRESPONSE']._serialized_end=1396
-  _globals['_MSGPAUSEMARKET']._serialized_start=1398
-  _globals['_MSGPAUSEMARKET']._serialized_end=1484
-  _globals['_MSGPAUSEMARKETRESPONSE']._serialized_start=1486
-  _globals['_MSGPAUSEMARKETRESPONSE']._serialized_end=1510
-  _globals['_MSGSETMARKETFEE']._serialized_start=1512
-  _globals['_MSGSETMARKETFEE']._serialized_end=1606
-  _globals['_MSGSETMARKETFEERESPONSE']._serialized_start=1608
-  _globals['_MSGSETMARKETFEERESPONSE']._serialized_end=1633
-  _globals['_MSGRESOLVEMARKET']._serialized_start=1636
-  _globals['_MSGRESOLVEMARKET']._serialized_end=1766
-  _globals['_MSGRESOLVEMARKETRESPONSE']._serialized_start=1768
-  _globals['_MSGRESOLVEMARKETRESPONSE']._serialized_end=1794
-  _globals['_MSG']._serialized_start=1797
-  _globals['_MSG']._serialized_end=2925
+  _globals['_MSGUPDATENEGRISKGROUP']._serialized_start=865
+  _globals['_MSGUPDATENEGRISKGROUP']._serialized_end=1002
+  _globals['_MSGUPDATENEGRISKGROUPRESPONSE']._serialized_start=1004
+  _globals['_MSGUPDATENEGRISKGROUPRESPONSE']._serialized_end=1073
+  _globals['_MSGUPDATEADMIN']._serialized_start=1075
+  _globals['_MSGUPDATEADMIN']._serialized_end=1145
+  _globals['_MSGUPDATEADMINRESPONSE']._serialized_start=1147
+  _globals['_MSGUPDATEADMINRESPONSE']._serialized_end=1171
+  _globals['_MSGCONVERTNEGRISKPOSITION']._serialized_start=1174
+  _globals['_MSGCONVERTNEGRISKPOSITION']._serialized_end=1309
+  _globals['_MSGCONVERTNEGRISKPOSITIONRESPONSE']._serialized_start=1311
+  _globals['_MSGCONVERTNEGRISKPOSITIONRESPONSE']._serialized_end=1384
+  _globals['_MSGCOLLAPSEPARLAYPOSITION']._serialized_start=1386
+  _globals['_MSGCOLLAPSEPARLAYPOSITION']._serialized_end=1484
+  _globals['_MSGCOLLAPSEPARLAYPOSITIONRESPONSE']._serialized_start=1486
+  _globals['_MSGCOLLAPSEPARLAYPOSITIONRESPONSE']._serialized_end=1607
+  _globals['_MSGPAUSEMARKET']._serialized_start=1609
+  _globals['_MSGPAUSEMARKET']._serialized_end=1695
+  _globals['_MSGPAUSEMARKETRESPONSE']._serialized_start=1697
+  _globals['_MSGPAUSEMARKETRESPONSE']._serialized_end=1721
+  _globals['_MSGSETMARKETFEE']._serialized_start=1723
+  _globals['_MSGSETMARKETFEE']._serialized_end=1817
+  _globals['_MSGSETMARKETFEERESPONSE']._serialized_start=1819
+  _globals['_MSGSETMARKETFEERESPONSE']._serialized_end=1844
+  _globals['_MSGRESOLVEMARKET']._serialized_start=1847
+  _globals['_MSGRESOLVEMARKET']._serialized_end=1977
+  _globals['_MSGRESOLVEMARKETRESPONSE']._serialized_start=1979
+  _globals['_MSGRESOLVEMARKETRESPONSE']._serialized_end=2005
+  _globals['_MSG']._serialized_start=2008
+  _globals['_MSG']._serialized_end=3269
 # @@protoc_insertion_point(module_scope)

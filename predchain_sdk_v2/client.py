@@ -116,6 +116,36 @@ class PredchainSDKv2Client:
         """Fetch CometBFT status from the configured RPC endpoint."""
         return self._request_json("GET", self._rpc_url("/status"))
 
+    def health(self) -> dict[str, Any]:
+        """Return a relayer-oriented health snapshot for RPC, signer, and chain head."""
+        status = self.status()
+        sync_info = status.get("result", {}).get("sync_info", {})
+        validator_info = status.get("result", {}).get("validator_info", {})
+        try:
+            signer = self.get_account_info(refresh_sequence_cache=False)
+        except Exception as exc:  # noqa: BLE001 - health should degrade into data, not throw eagerly
+            signer_data: dict[str, Any] = {
+                "address": self.cfg.signer_address,
+                "exists": False,
+                "error": str(exc),
+            }
+        else:
+            signer_data = {
+                "address": signer.address,
+                "exists": signer.exists,
+                "account_number": signer.account_number,
+                "sequence": signer.sequence,
+            }
+        return {
+            "ok": True,
+            "chain_id": self.chain_id(),
+            "latest_height": self._int_value(sync_info.get("latest_block_height")),
+            "latest_block_time": str(sync_info.get("latest_block_time", "") or ""),
+            "catching_up": bool(sync_info.get("catching_up")),
+            "validator_address": str(validator_info.get("address", "") or ""),
+            "signer": signer_data,
+        }
+
     def chain_id(self, refresh: bool = False) -> str:
         """Return the configured chain id, querying RPC status if needed."""
         if self.cfg.chain_id and not refresh:
@@ -144,6 +174,26 @@ class PredchainSDKv2Client:
             self._account_number = info.account_number
             self._next_sequence = info.sequence
         return info
+
+    def signer_status(self, refresh: bool = True) -> dict[str, Any]:
+        """Return relayer signer account status plus current local sequence cache."""
+        info = self.get_account_info(refresh_sequence_cache=refresh)
+        return {
+            "address": info.address,
+            "exists": info.exists,
+            "account_number": info.account_number,
+            "chain_sequence": info.sequence,
+            "cached_next_sequence": self._next_sequence,
+            "chain_id": self.chain_id(),
+        }
+
+    def balances(self, address: str | None = None) -> dict[str, Any]:
+        """Fetch all bank balances for one account directly from chain REST."""
+        normalized = normalize_address(address or self.cfg.signer_address)
+        return self._request_json(
+            "GET",
+            self._api_url(f"/cosmos/bank/v1beta1/balances/{parse.quote(normalized, safe='')}"),
+        )
 
     def get_tx(self, tx_hash: str) -> dict[str, Any]:
         """Fetch a tx from the chain REST API by hash."""

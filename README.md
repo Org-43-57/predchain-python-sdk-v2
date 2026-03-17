@@ -179,6 +179,15 @@ recommended production pattern is still:
 - one queue per relayer key
 - one `PredchainSDKv2Client` instance per relayer worker
 
+Useful relayer helpers:
+
+- `health()`
+- `signer_status()`
+- `balances()`
+- `sync_signer_state()`
+- `reset_sequence_cache()`
+- `submit_messages()`
+
 ## Modules Covered
 
 The SDK currently supports:
@@ -196,9 +205,12 @@ See [docs/transactions.md](/Users/valkvalue/IdeaProjects/testss/predchain-python
 
 Low-level helpers:
 
+- `health()`
 - `status()`
 - `chain_id()`
 - `get_account_info()`
+- `signer_status()`
+- `balances()`
 - `sync_signer_state()`
 - `reset_sequence_cache()`
 - `get_tx()`

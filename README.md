@@ -15,23 +15,23 @@ Important behavior:
 - it **does** sign the outer native Cosmos relayer tx with the configured
   relayer key
 
-## The Main Idea
+## Main API Surface
 
-The normal entrypoint is:
+The intended public names are:
 
-- `PredchainRelayer` for one relayer key
-- `PredchainRelayerPool` for multiple relayer keys
+- `PredchainRelayerClient`
+- `PredchainRelayerPool`
 
-Those two classes are the relayer-shaped API. They are the surface that should
-feel like “the relayer”.
-
-The lower-level classes still exist:
+These are not separate wrapper engines. They are the same underlying
+implementations as:
 
 - `PredchainSDKv2Client`
 - `PredchainSDKv2Pool`
 
-but those are now the escape hatch when you want the full raw tx surface or
-direct broadcast-mode control.
+That is intentional now: one implementation, one set of query methods, one set
+of submit methods, no thin duplicate facade layer.
+
+Use the relayer names in normal integrations.
 
 ## Installation
 
@@ -47,16 +47,16 @@ Runtime dependencies:
 ## Single Relayer Quick Start
 
 ```python
-from predchain_sdk_v2 import Order, PredchainRelayer
+from predchain_sdk_v2 import Order, PredchainRelayerClient
 
-relayer = PredchainRelayer.connect(
+relayer = PredchainRelayerClient(
     api_url="http://46.62.232.134:1317",
     rpc_url="http://46.62.232.134:26657",
     signer_address="0xRELAYER",
     private_key_hex="RELAYER_PRIVATE_KEY_HEX",
 )
 
-relayer.warm()
+relayer.sync_signer_state()
 
 taker = Order(
     salt=1,
@@ -90,35 +90,17 @@ maker = Order(
     signature="0xMAKER_ORDER_SIGNATURE",
 )
 
-submission = relayer.submit_match_orders(
+submission = relayer.match_orders(
     taker_order=taker,
     maker_orders=[maker],
     taker_fill_amount="500000",
     maker_fill_amounts=["1000000"],
+    broadcast_mode="BROADCAST_MODE_SYNC",
 )
 
 print(submission.tx_hash)
 print(submission.status)
 print(submission.accepted)
-```
-
-By default, the relayer facade submits with sync/checktx semantics:
-
-- fast return
-- immediate `tx_hash`
-- immediate accept/reject signal
-- no need to thread Cosmos broadcast mode strings through normal code
-
-If you want inline commit confirmation:
-
-```python
-submission = relayer.submit_match_orders(
-    taker_order=taker,
-    maker_orders=[maker],
-    taker_fill_amount="500000",
-    maker_fill_amounts=["1000000"],
-    wait_for_commit=True,
-)
 ```
 
 ## Multiple Relayers
@@ -127,32 +109,31 @@ If one relayer key is not enough for your throughput target, use
 `PredchainRelayerPool`.
 
 ```python
-from predchain_sdk_v2 import PredchainRelayerPool, RelayerConfig
+from predchain_sdk_v2 import PredchainRelayerClient, PredchainRelayerPool
 
-pool = PredchainRelayerPool.from_configs(
-    [
-        RelayerConfig(
-            api_url="http://46.62.232.134:1317",
-            rpc_url="http://46.62.232.134:26657",
-            signer_address="0xRELAYER_1",
-            private_key_hex="RELAYER_1_PRIVATE_KEY_HEX",
-        ),
-        RelayerConfig(
-            api_url="http://46.62.232.134:1317",
-            rpc_url="http://46.62.232.134:26657",
-            signer_address="0xRELAYER_2",
-            private_key_hex="RELAYER_2_PRIVATE_KEY_HEX",
-        ),
-    ]
-)
+pool = PredchainRelayerPool([
+    PredchainRelayerClient(
+        api_url="http://46.62.232.134:1317",
+        rpc_url="http://46.62.232.134:26657",
+        signer_address="0xRELAYER_1",
+        private_key_hex="RELAYER_1_PRIVATE_KEY_HEX",
+    ),
+    PredchainRelayerClient(
+        api_url="http://46.62.232.134:1317",
+        rpc_url="http://46.62.232.134:26657",
+        signer_address="0xRELAYER_2",
+        private_key_hex="RELAYER_2_PRIVATE_KEY_HEX",
+    ),
+])
 
-pool.warm()
+pool.sync_signer_state()
 
-submission = pool.submit_match_orders(
+submission = pool.match_orders(
     taker_order=taker,
     maker_orders=[maker],
     taker_fill_amount="500000",
     maker_fill_amounts=["1000000"],
+    broadcast_mode="BROADCAST_MODE_SYNC",
 )
 ```
 
@@ -162,24 +143,24 @@ The pool:
 - balances across relayers when no explicit signer is requested
 - still lets you route to one exact relayer signer when needed
 
-## What The Relayer API Covers
+## Queries And Status
 
-The high-level relayer classes cover the operational things a relayer does most
-often:
+This SDK is not only for submission. The relayer client also includes the
+basic query/status methods a relayer normally needs:
 
-- warm signer state before hot submission
-- return relayer health / signer status
-- submit `MsgMatchOrders`
-- submit `MsgCancelOrders`
-- submit `MsgInvalidateNonce`
-- wait for one tx when the caller wants commit confirmation
+- `status()`
+- `health()`
+- `get_account_info()`
+- `signer_status()`
+- `balances()`
+- `get_tx()`
+- `wait_for_tx()`
 
-That means your normal orderbook integration can stay small:
+So the same client instance can:
 
-1. build/receive already-signed orders
-2. call `submit_match_orders(...)`
-3. inspect `TxSubmission`
-4. optionally call `get_tx(...)` / `wait_for_tx(...)`
+- check signer/account state
+- submit txs
+- inspect tx status later
 
 ## Sequence Handling
 
@@ -194,14 +175,14 @@ For one relayer signer, it:
 
 That is why the normal recommendation is:
 
-- one `PredchainRelayer` per relayer key
+- one `PredchainRelayerClient` per relayer key
 - or one `PredchainRelayerPool` across multiple relayer keys
 
 Callers should not need to manually manage sequence values during normal use.
 
 ## Example Implementations
 
-The repo now includes relayer-style examples, not just low-level snippets:
+The repo includes relayer-style examples:
 
 - [examples/submit_match_orders.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/submit_match_orders.py)
   - smallest direct relayer submission example
@@ -209,19 +190,6 @@ The repo now includes relayer-style examples, not just low-level snippets:
   - shows how an orderbook hands one ready settlement to one relayer
 - [examples/relayer_pool_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_pool_worker.py)
   - shows multi-relayer fanout through one relayer abstraction
-
-## Lower-Level Escape Hatch
-
-If you need full raw tx surface, those classes still exist:
-
-- `PredchainSDKv2Client`
-- `PredchainSDKv2Pool`
-
-Use them only when you intentionally want:
-
-- direct broadcast-mode strings
-- direct per-module helper methods
-- lower-level native tx control
 
 ## Return Shape
 
@@ -250,9 +218,8 @@ bash scripts/generate_protos.sh
 
 ## Package Layout
 
-- `predchain_sdk_v2/relayer.py`: relayer-shaped high-level API
-- `predchain_sdk_v2/client.py`: lower-level direct-chain client
-- `predchain_sdk_v2/pool.py`: lower-level multi-relayer pool
+- `predchain_sdk_v2/client.py`: unified direct-chain relayer/query client
+- `predchain_sdk_v2/pool.py`: multi-relayer pool
 - `predchain_sdk_v2/messages.py`: protobuf message builders
 - `predchain_sdk_v2/models.py`: request/response dataclasses
 - `predchain_sdk_v2/crypto.py`: relayer signing helpers

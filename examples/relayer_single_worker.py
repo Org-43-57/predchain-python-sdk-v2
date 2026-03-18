@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from predchain_sdk_v2 import Order, PredchainRelayer, TxSubmission
+from predchain_sdk_v2 import Order, PredchainRelayerClient, TxSubmission
 
 
 @dataclass(slots=True)
@@ -14,7 +14,7 @@ class ReadySettlement:
     surplus_recipient: str = ""
 
 
-def settle_ready_match(relayer: PredchainRelayer, ready: ReadySettlement) -> TxSubmission:
+def settle_ready_match(relayer: PredchainRelayerClient, ready: ReadySettlement) -> TxSubmission:
     """
     Example orderbook handoff.
 
@@ -22,13 +22,13 @@ def settle_ready_match(relayer: PredchainRelayer, ready: ReadySettlement) -> TxS
     The relayer SDK only needs to submit the outer native chain tx.
     """
 
-    return relayer.submit_match_orders(
+    return relayer.match_orders(
         taker_order=ready.taker_order,
         maker_orders=ready.maker_orders,
         taker_fill_amount=ready.taker_fill_amount,
         maker_fill_amounts=ready.maker_fill_amounts,
         surplus_recipient=ready.surplus_recipient,
-        wait_for_commit=False,
+        broadcast_mode="BROADCAST_MODE_SYNC",
     )
 
 
@@ -40,13 +40,13 @@ def handle_submission(submission: TxSubmission) -> None:
 
 
 def main() -> None:
-    relayer = PredchainRelayer.connect(
+    relayer = PredchainRelayerClient(
         api_url="http://46.62.232.134:1317",
         rpc_url="http://46.62.232.134:26657",
         signer_address="0xRELAYER",
         private_key_hex="RELAYER_PRIVATE_KEY_HEX",
     )
-    relayer.warm()
+    relayer.sync_signer_state()
 
     ready = ReadySettlement(
         taker_order=Order(

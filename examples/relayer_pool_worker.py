@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from predchain_sdk_v2 import Order, PredchainRelayerPool, RelayerConfig
+from predchain_sdk_v2 import Order, PredchainRelayerClient, PredchainRelayerPool
 
 
 def main() -> None:
-    pool = PredchainRelayerPool.from_configs(
+    pool = PredchainRelayerPool(
         [
-            RelayerConfig(
+            PredchainRelayerClient(
                 api_url="http://46.62.232.134:1317",
                 rpc_url="http://46.62.232.134:26657",
                 signer_address="0xRELAYER_1",
                 private_key_hex="RELAYER_1_PRIVATE_KEY_HEX",
             ),
-            RelayerConfig(
+            PredchainRelayerClient(
                 api_url="http://46.62.232.134:1317",
                 rpc_url="http://46.62.232.134:26657",
                 signer_address="0xRELAYER_2",
@@ -21,7 +21,7 @@ def main() -> None:
         ]
     )
 
-    pool.warm()
+    pool.sync_signer_state()
 
     taker = Order(
         salt=1,
@@ -55,12 +55,12 @@ def main() -> None:
         signature="0xMAKER_ORDER_SIGNATURE",
     )
 
-    submission = pool.submit_match_orders(
+    submission = pool.match_orders(
         taker_order=taker,
         maker_orders=[maker],
         taker_fill_amount="500000",
         maker_fill_amounts=["1000000"],
-        wait_for_commit=False,
+        broadcast_mode="BROADCAST_MODE_SYNC",
     )
 
     print(submission.to_dict())

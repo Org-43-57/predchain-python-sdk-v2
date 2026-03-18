@@ -1,14 +1,14 @@
-from predchain_sdk_v2 import Order, PredchainRelayer
+from predchain_sdk_v2 import Order, PredchainRelayerClient
 
 
 def main() -> None:
-    relayer = PredchainRelayer.connect(
+    relayer = PredchainRelayerClient(
         api_url="http://46.62.232.134:1317",
         rpc_url="http://46.62.232.134:26657",
         signer_address="0xRELAYER",
         private_key_hex="RELAYER_PRIVATE_KEY_HEX",
     )
-    relayer.warm()
+    relayer.sync_signer_state()
 
     taker = Order(
         salt=1,
@@ -42,12 +42,12 @@ def main() -> None:
         signature="0xMAKER_ORDER_SIGNATURE",
     )
 
-    submission = relayer.submit_match_orders(
+    submission = relayer.match_orders(
         taker_order=taker,
         maker_orders=[maker],
         taker_fill_amount="500000",
         maker_fill_amounts=["1000000"],
-        wait_for_commit=False,
+        broadcast_mode="BROADCAST_MODE_SYNC",
     )
     print(submission.to_dict())
 

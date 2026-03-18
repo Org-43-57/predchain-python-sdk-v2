@@ -1,26 +1,30 @@
 # Predchain Python SDK v2 Transaction Reference
 
-This document describes the SDK in the shape it is intended to be used:
+This SDK should be understood as one unified relayer/query client.
 
-- `PredchainRelayer` for one relayer key
-- `PredchainRelayerPool` for multiple relayer keys
+Use these public names:
 
-The lower-level classes still exist, but they are secondary:
+- `PredchainRelayerClient`
+- `PredchainRelayerPool`
 
-- `PredchainSDKv2Client`
-- `PredchainSDKv2Pool`
+Those are the recommended names for integration, but they point to the same
+underlying implementations as `PredchainSDKv2Client` and `PredchainSDKv2Pool`.
+
+That means:
+
+- one implementation
+- no thin duplicate relayer wrapper
+- query methods and submit methods live together on the same client
 
 ## Operational Model
-
-The SDK is meant to sit where a relayer would sit.
 
 The normal flow is:
 
 1. your orderbook decides a settlement
 2. the orderbook already has signed orders
-3. it calls the relayer SDK
-4. the SDK builds and signs the outer native Cosmos tx
-5. the SDK returns `TxSubmission`
+3. it calls the relayer client
+4. the client builds and signs the outer native Cosmos tx
+5. the client returns `TxSubmission`
 
 The SDK does **not**:
 
@@ -28,21 +32,19 @@ The SDK does **not**:
 - decide matching logic
 - replace your orderbook
 
-It only takes the already-prepared settlement/admin/action payload and submits
-it to chain in a relayer-safe way.
+It only takes already-prepared settlement/admin/action payloads and submits
+them to chain in a relayer-safe way.
 
 ## Main Entry Points
 
-### `PredchainRelayer.connect(...)`
-
-Builds a high-level relayer instance from one relayer key.
+### `PredchainRelayerClient(...)`
 
 Use this for the common case: one worker, one relayer signer.
 
 ```python
-from predchain_sdk_v2 import PredchainRelayer
+from predchain_sdk_v2 import PredchainRelayerClient
 
-relayer = PredchainRelayer.connect(
+relayer = PredchainRelayerClient(
     api_url="http://46.62.232.134:1317",
     rpc_url="http://46.62.232.134:26657",
     signer_address="0xRELAYER",
@@ -50,198 +52,59 @@ relayer = PredchainRelayer.connect(
 )
 ```
 
-### `PredchainRelayerPool.from_configs(...)`
+### `PredchainRelayerPool([...])`
 
-Builds a high-level multi-relayer abstraction.
-
-Use this when one relayer key is not enough for throughput and you want the SDK
-to handle routing across several relayer signers.
+Use this when one relayer key is not enough for throughput and you want one
+SDK-managed pool across multiple relayer signers.
 
 ```python
-from predchain_sdk_v2 import PredchainRelayerPool, RelayerConfig
+from predchain_sdk_v2 import PredchainRelayerClient, PredchainRelayerPool
 
-pool = PredchainRelayerPool.from_configs([
-    RelayerConfig(
-        api_url="http://46.62.232.134:1317",
-        rpc_url="http://46.62.232.134:26657",
-        signer_address="0xRELAYER_1",
-        private_key_hex="RELAYER_1_PRIVATE_KEY_HEX",
-    ),
-    RelayerConfig(
-        api_url="http://46.62.232.134:1317",
-        rpc_url="http://46.62.232.134:26657",
-        signer_address="0xRELAYER_2",
-        private_key_hex="RELAYER_2_PRIVATE_KEY_HEX",
-    ),
+pool = PredchainRelayerPool([
+    PredchainRelayerClient(... signer_address="0xRELAYER_1", private_key_hex="..."),
+    PredchainRelayerClient(... signer_address="0xRELAYER_2", private_key_hex="..."),
 ])
 ```
 
-## Warm-Up And Health
+## Query / Read Methods
 
-### `warm()`
+The same relayer client also exposes the normal read methods a relayer needs:
 
-Fetches signer account state and warms the local sequence cache.
+### `status() -> dict`
 
-Use this once before a hot submission loop.
+Fetches raw CometBFT RPC `/status`.
 
-```python
-relayer.warm()
-pool.warm()
-```
+### `health() -> dict`
 
-### `health()`
+Returns a relayer-oriented snapshot:
 
-Returns a relayer-oriented health snapshot.
-
-For one relayer:
-
-- current chain id
+- chain id
 - latest height
 - latest block time
 - whether the node is catching up
-- signer existence and sequence data
+- signer existence / account number / sequence
 
-For a pool:
+### `get_account_info(address=None, refresh_sequence_cache=False) -> AccountInfo`
 
-- one health snapshot per relayer
-- relayer count
+Fetches account number and sequence for the relayer signer or another account.
 
-### `signer_status()` / `signer_statuses()`
+### `signer_status(refresh=True) -> dict`
 
-Returns sequence-focused status useful for debugging or monitoring.
+Returns signer-focused status including the cached next sequence.
 
-### `balances(address=None)`
+### `balances(address=None) -> dict`
 
-Returns bank balances directly from chain REST.
+Fetches bank balances from chain REST.
 
-This is useful when diagnosing relayer funding or signer state issues.
+### `get_tx(tx_hash) -> dict`
 
-## The Main Submission Methods
+Fetches one tx from chain REST by hash.
 
-### `submit_match_orders(...)`
-
-The main settlement method.
-
-This expects:
-
-- `taker_order`
-- `maker_orders`
-- `taker_fill_amount`
-- `maker_fill_amounts`
-
-The orders must already be signed. The SDK does not sign them.
-
-Default behavior:
-
-- submit with sync/checktx semantics
-- return quickly with tx hash + accept/reject signal
-
-Optional:
-
-- `wait_for_commit=True`
-
-That switches to inline commit observation without exposing Cosmos broadcast
-mode strings in the normal API.
-
-Example:
-
-```python
-submission = relayer.submit_match_orders(
-    taker_order=taker_order,
-    maker_orders=maker_orders,
-    taker_fill_amount=taker_fill_amount,
-    maker_fill_amounts=maker_fill_amounts,
-)
-```
-
-### `submit_cancel_orders(...)`
-
-Submits `MsgCancelOrders`.
-
-Use this when the relayer/execution service needs to cancel one or more order
-hashes for a signer/principal pair.
-
-### `submit_invalidate_nonce(...)`
-
-Submits `MsgInvalidateNonce`.
-
-Use this when the relayer/execution service wants to raise the minimum valid
-nonce for one signer/principal pair.
-
-### `submit_message(...)`
-
-Submits one already-built protobuf message through the relayer abstraction.
-
-Use this when you need a non-settlement native tx, but still want the relayer
-surface:
-
-- one boolean `wait_for_commit`
-- relayer-managed sequence handling
-- one structured `TxSubmission`
-
-### `submit_messages(...)`
-
-Same as above, but for multi-message txs.
-
-## Waiting For One Tx
-
-### `wait_for_tx(tx_hash, timeout_seconds=None)`
+### `wait_for_tx(tx_hash, timeout_seconds=None) -> dict`
 
 Polls RPC until the tx is observed in a block or the timeout expires.
 
-Use this when:
-
-- you submitted fast
-- you got a `tx_hash`
-- you want to check final execution later
-
-### `get_tx(tx_hash)`
-
-Fetches one tx from REST by hash.
-
-This is useful when you only need the current chain view of one tx, without
-running a wait loop.
-
-## Sequence Handling
-
-The SDK is expected to handle normal relayer sequence concerns by itself.
-
-For one signer it:
-
-- serializes submissions per client instance
-- keeps a local next-sequence cache
-- refreshes signer state on mismatch
-- retries safe sequence mismatches automatically
-
-That means callers normally should **not** manage sequence values manually.
-
-### `reset_sequence_cache()`
-
-This exists as an escape hatch, not a normal workflow.
-
-Use it only if:
-
-- the same relayer key was used by another process
-- you intentionally want to discard the SDK’s local sequence cache
-
-## Multiple Relayers
-
-`PredchainRelayerPool` exists because one Cosmos signer still has one sequence.
-
-If you want more parallel throughput than one relayer key can safely support,
-the right approach is:
-
-- more relayer keys
-- one SDK-managed client per relayer key
-- one pool routing across them
-
-The pool:
-
-- isolates sequence handling per signer
-- routes to explicit signer when you pass one
-- otherwise balances across relayers
-
-## Return Shape
+## Submission Methods
 
 All submission methods return `TxSubmission`.
 
@@ -259,34 +122,106 @@ Important fields:
 - `gas_wanted`
 - `gas_used`
 
-Typical statuses:
+### `submit_message(...)`
 
-- `accepted`
-- `broadcast_rejected`
-- `commit_timeout`
-- `committed_success`
-- `committed_failure`
+Low-level one-message submission path.
+
+Use this when you already built a protobuf message yourself.
+
+### `submit_messages(...)`
+
+Low-level multi-message submission path.
+
+### `match_orders(...)`
+
+Main settlement method.
+
+This expects:
+
+- `taker_order`
+- `maker_orders`
+- `taker_fill_amount`
+- `maker_fill_amounts`
+
+The orders must already be signed. The SDK does not sign them.
+
+Recommended hot-path usage:
+
+```python
+submission = relayer.match_orders(
+    taker_order=taker_order,
+    maker_orders=maker_orders,
+    taker_fill_amount=taker_fill_amount,
+    maker_fill_amounts=maker_fill_amounts,
+    broadcast_mode="BROADCAST_MODE_SYNC",
+)
+```
+
+### `cancel_orders(...)`
+
+Submits `MsgCancelOrders`.
+
+### `invalidate_nonce(...)`
+
+Submits `MsgInvalidateNonce`.
+
+### Other chain tx methods
+
+The same client also includes the broader chain tx helpers:
+
+- bank send
+- market txs
+- CTF txs
+- settlement txs
+- PoA admin txs
+- testnet mint admin txs
+
+## Sequence Handling
+
+The SDK is expected to handle normal relayer sequence concerns by itself.
+
+For one signer it:
+
+- serializes submissions per client instance
+- keeps a local next-sequence cache
+- refreshes signer state on mismatch
+- retries safe sequence mismatches automatically
+
+That means callers normally should **not** manage sequence values manually.
+
+### `sync_signer_state()`
+
+Warm signer account/sequence state before a hot submit loop.
+
+### `reset_sequence_cache()`
+
+Escape hatch only.
+
+Use it when:
+
+- the same relayer key was used by another process
+- you want the next submit to re-read chain state
+
+## Multiple Relayers
+
+`PredchainRelayerPool` exists because one Cosmos signer still has one sequence.
+
+If you want more parallel throughput than one relayer key can safely support:
+
+- use more relayer keys
+- one SDK-managed client per key
+- route through the pool
+
+The pool:
+
+- isolates sequence handling per signer
+- routes to explicit signer when you pass one
+- otherwise balances across relayers
+
+The pool delegates the same tx/query methods as the single relayer client.
 
 ## Example Implementations In This Repo
-
-These are the best place to see how the SDK is meant to be used:
 
 - [examples/submit_match_orders.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/submit_match_orders.py)
 - [examples/relayer_single_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_single_worker.py)
 - [examples/relayer_pool_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_pool_worker.py)
-
-## Lower-Level Escape Hatch
-
-If you need broader raw tx coverage, you can still drop down to:
-
-- `PredchainSDKv2Client`
-- `PredchainSDKv2Pool`
-
-Those expose:
-
-- direct broadcast modes
-- all module helper methods
-- lower-level tx assembly/submission control
-
-That layer is still useful, but it is no longer the recommended front door for
-normal relayer integration.

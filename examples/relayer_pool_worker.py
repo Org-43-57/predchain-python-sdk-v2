@@ -1,14 +1,27 @@
-from predchain_sdk_v2 import Order, PredchainRelayer
+from __future__ import annotations
+
+from predchain_sdk_v2 import Order, PredchainRelayerPool, RelayerConfig
 
 
 def main() -> None:
-    relayer = PredchainRelayer.connect(
-        api_url="http://46.62.232.134:1317",
-        rpc_url="http://46.62.232.134:26657",
-        signer_address="0xRELAYER",
-        private_key_hex="RELAYER_PRIVATE_KEY_HEX",
+    pool = PredchainRelayerPool.from_configs(
+        [
+            RelayerConfig(
+                api_url="http://46.62.232.134:1317",
+                rpc_url="http://46.62.232.134:26657",
+                signer_address="0xRELAYER_1",
+                private_key_hex="RELAYER_1_PRIVATE_KEY_HEX",
+            ),
+            RelayerConfig(
+                api_url="http://46.62.232.134:1317",
+                rpc_url="http://46.62.232.134:26657",
+                signer_address="0xRELAYER_2",
+                private_key_hex="RELAYER_2_PRIVATE_KEY_HEX",
+            ),
+        ]
     )
-    relayer.warm()
+
+    pool.warm()
 
     taker = Order(
         salt=1,
@@ -42,14 +55,16 @@ def main() -> None:
         signature="0xMAKER_ORDER_SIGNATURE",
     )
 
-    submission = relayer.submit_match_orders(
+    submission = pool.submit_match_orders(
         taker_order=taker,
         maker_orders=[maker],
         taker_fill_amount="500000",
         maker_fill_amounts=["1000000"],
         wait_for_commit=False,
     )
+
     print(submission.to_dict())
+    print(pool.signer_statuses(refresh=False))
 
 
 if __name__ == "__main__":

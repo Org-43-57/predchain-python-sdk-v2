@@ -10,6 +10,7 @@ from .models import (
     TxSubmission,
     ValidatorSlot,
 )
+from .pool import PredchainRelayerPool, PredchainSDKv2Pool
 
 __all__ = [
     "AccountInfo",
@@ -20,7 +21,9 @@ __all__ = [
     "ParlayLeg",
     "PredchainHTTPError",
     "PredchainRelayerClient",
+    "PredchainRelayerPool",
     "PredchainSDKv2Client",
+    "PredchainSDKv2Pool",
     "PredchainRelayerError",
     "RelayerConfig",
     "SequenceMismatchError",

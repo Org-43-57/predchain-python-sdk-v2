@@ -28,7 +28,7 @@ and you need to:
 - submit one chain tx
 - get back the tx hash
 - know whether the tx was accepted, committed, or failed
-- keep relayer sequence handling sane under continuous submission
+- let the SDK keep relayer sequence handling sane under continuous submission
 
 ## Installation
 
@@ -128,6 +128,46 @@ That gives you:
 Use `BROADCAST_MODE_BLOCK` only when the caller really wants commit-time
 confirmation inline.
 
+## Multiple Relayers
+
+If one relayer key is not enough for your throughput target, use
+`PredchainSDKv2Pool`.
+
+The pool keeps sequence handling isolated per signer and balances new work
+across multiple relayer clients when no explicit signer is requested.
+
+```python
+from predchain_sdk_v2 import PredchainSDKv2Client, PredchainSDKv2Pool
+
+pool = PredchainSDKv2Pool([
+    PredchainSDKv2Client(
+        api_url="http://46.62.232.134:1317",
+        rpc_url="http://46.62.232.134:26657",
+        signer_address="0xrelayer1",
+        private_key_hex="RELAYER1_KEY",
+    ),
+    PredchainSDKv2Client(
+        api_url="http://46.62.232.134:1317",
+        rpc_url="http://46.62.232.134:26657",
+        signer_address="0xrelayer2",
+        private_key_hex="RELAYER2_KEY",
+    ),
+])
+
+pool.sync_signer_state()
+
+submission = pool.match_orders(
+    taker_order=taker,
+    maker_orders=[maker],
+    taker_fill_amount="500000",
+    maker_fill_amounts=["1000000"],
+    broadcast_mode="BROADCAST_MODE_SYNC",
+)
+```
+
+If you pass `submitter=...`, `authority=...`, `signer=...`, or another
+explicit signer-like kwarg, the pool routes to that exact relayer.
+
 ## Return Shape
 
 Every tx submission method returns `TxSubmission`.
@@ -161,9 +201,14 @@ Behavior:
 
 ## Sequence Handling
 
-The SDK serializes submissions per client instance and maintains a local
-sequence cache for the relayer signer. On a sequence mismatch it refreshes the
-signer account and retries.
+The SDK handles normal Cosmos relayer sequence management internally.
+
+For one `PredchainSDKv2Client`, it:
+
+- serializes submissions per client instance
+- maintains a local sequence cache for the relayer signer
+- refreshes signer state on sequence mismatch
+- retries safely when the mismatch is recoverable
 
 It also exposes:
 
@@ -175,11 +220,13 @@ If the broadcast request itself fails ambiguously at the transport layer, the
 SDK drops its local sequence cache before the next attempt so it does not keep
 blindly advancing stale local nonce state.
 
-This helps with the normal Cosmos relayer nonce/sequence problem, but the
-recommended production pattern is still:
+So normal callers do not need to manually manage sequence values.
+
+The remaining architectural choice is throughput scaling:
 
 - one queue per relayer key
 - one `PredchainSDKv2Client` instance per relayer worker
+- or one `PredchainSDKv2Pool` across multiple relayer keys
 
 Useful relayer helpers:
 
@@ -220,6 +267,7 @@ Low-level helpers:
 - `submit_message()`
 - `submit_messages()`
 - `broadcast_tx_bytes()`
+- `PredchainSDKv2Pool` for multi-relayer routing
 
 High-level tx methods:
 
@@ -259,6 +307,7 @@ bash scripts/generate_protos.sh
 ## Package Layout
 
 - `predchain_sdk_v2/client.py`: high-level direct-chain client
+- `predchain_sdk_v2/pool.py`: multi-relayer pool wrapper
 - `predchain_sdk_v2/messages.py`: protobuf message builders
 - `predchain_sdk_v2/models.py`: request/response dataclasses
 - `predchain_sdk_v2/crypto.py`: relayer signing helpers

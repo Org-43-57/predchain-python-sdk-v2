@@ -48,8 +48,11 @@ Why:
 
 - Cosmos sequence handling is per signer account
 - one relayer key should not have concurrent uncontrolled writers
-- this SDK already serializes submits per client instance, but the clean
-  architecture is still one queue per key
+- this SDK already serializes submits per client instance, so normal callers do
+  not need to manage sequence values manually
+
+If you want multiple relayers inside one SDK abstraction, use
+`PredchainSDKv2Pool`.
 
 ## Common Return Object
 
@@ -221,6 +224,78 @@ Use this manually only when:
 ```python
 client.reset_sequence_cache()
 ```
+
+## Multi-Relayer Pool
+
+### `PredchainSDKv2Pool(clients: list[PredchainSDKv2Client])`
+
+Wraps multiple relayer clients under one abstraction.
+
+What it does:
+
+- keeps sequence handling isolated per relayer signer
+- balances new work across clients when no explicit signer is requested
+- routes to one exact relayer when you pass a signer-like kwarg such as
+  `submitter`, `authority`, `holder`, `signer`, or `signer_address`
+
+Example:
+
+```python
+from predchain_sdk_v2 import PredchainSDKv2Client, PredchainSDKv2Pool
+
+pool = PredchainSDKv2Pool([
+    PredchainSDKv2Client(... signer_address="0xrelayer1", private_key_hex="..."),
+    PredchainSDKv2Client(... signer_address="0xrelayer2", private_key_hex="..."),
+])
+
+pool.sync_signer_state()
+
+submission = pool.match_orders(
+    taker_order=taker_order,
+    maker_orders=maker_orders,
+    taker_fill_amount=taker_fill_amount,
+    maker_fill_amounts=maker_fill_amounts,
+    broadcast_mode="BROADCAST_MODE_SYNC",
+)
+```
+
+### `PredchainSDKv2Pool.from_configs(configs: list[RelayerConfig])`
+
+Builds a pool directly from multiple relayer configs.
+
+### `signer_addresses() -> list[str]`
+
+Returns the relayer signer addresses currently in the pool.
+
+### `sync_signer_state() -> list[AccountInfo]`
+
+Warms the signer account/sequence cache for every relayer in the pool.
+
+### `signer_statuses(refresh: bool = True) -> list[dict]`
+
+Returns signer status data for every relayer in the pool.
+
+### `health() -> dict`
+
+Returns one aggregated health snapshot containing all relayers.
+
+### `reset_sequence_cache(signer_address: str | None = None) -> None`
+
+Resets one relayer cache or all relayer caches in the pool.
+
+### Delegated tx methods
+
+The pool delegates the same tx submission methods as `PredchainSDKv2Client`,
+including:
+
+- `submit_message()`
+- `submit_messages()`
+- `match_orders()`
+- `cancel_orders()`
+- all admin, market, CTF, and settlement helpers
+
+When no explicit relayer signer is provided, the pool picks the relayer with
+the lowest current in-flight load, with round-robin tie-breaking.
 
 ### `balances(address: str | None = None) -> dict`
 

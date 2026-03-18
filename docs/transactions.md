@@ -68,7 +68,9 @@ pool = PredchainRelayerPool([
 
 ## Query / Read Methods
 
-The same relayer client also exposes the normal read methods a relayer needs:
+The same relayer client also exposes the normal read methods a relayer needs.
+The idea is that the integrating service should not need a second SDK just to
+inspect chain state before or after submission.
 
 ### `status() -> dict`
 
@@ -95,6 +97,103 @@ Returns signer-focused status including the cached next sequence.
 ### `balances(address=None) -> dict`
 
 Fetches bank balances from chain REST.
+
+### `account(address) -> dict`
+
+Fetches one normalized account detail document from the explorer read API.
+
+Use this when you want:
+
+- account number / sequence
+- collateral balance summary
+- granted agents
+- principals that delegated to this account
+
+### `accounts_index(sort_by="balance_desc", page=1, limit=25) -> dict`
+
+Fetches paginated account summaries.
+
+Useful when the relayer/service wants a simple sortable account index without
+walking the full auth/bank state itself.
+
+### `authorities() -> dict`
+
+Fetches the current authority/admin surface:
+
+- market admin
+- settlement admin and matcher allowlist
+- PoA admin
+- testnet mint admin
+
+This is the main read method for “who controls what right now”.
+
+### `settlement_params() -> dict`
+
+Fetches the settlement module params directly from the chain-native explorer API.
+
+### `market(market_id) -> dict`
+
+Fetches one normalized market detail response, including:
+
+- core market metadata
+- YES / NO position metadata
+- neg-risk group detail when attached
+- parlay composition when the market is a parlay
+- reverse “used by parlays” references when applicable
+
+### `markets(...) -> dict`
+
+Fetches paginated market registry data with filters.
+
+Supported filter kwargs:
+
+- `market_type`
+- `status`
+- `contains`
+- `group_id`
+- `leg_market_id`
+- `sort`
+- `limit`
+- `offset`
+
+### `market_by_position(position_id) -> dict`
+
+Resolves one position id back to its owning market detail.
+
+### `neg_risk_group(group_id) -> dict`
+
+Fetches one neg-risk group plus grouped market summaries.
+
+### `agent_authorization(principal, agent) -> dict`
+
+Fetches one exact settlement agent authorization edge.
+
+### `agents_by_principal(principal, offset=0, limit=50) -> dict`
+
+Lists paginated agents granted by one principal.
+
+### `principals_by_agent(agent, offset=0, limit=50) -> dict`
+
+Lists paginated principals that granted one agent.
+
+### `order_status(order) -> dict`
+
+Fetches current settlement state for one order:
+
+- order hash
+- filled maker amount
+- remaining maker amount
+- cancelled / nonce invalidated / expired flags
+- fully-filled / active flags
+- min valid nonce
+
+### `order_fill(order) -> dict`
+
+Focused version of `order_status()` for fill accounting only.
+
+### `nonce_status(signer, nonce, principal=None) -> dict`
+
+Checks whether one nonce is still valid for a signer/principal pair.
 
 ### `get_tx(tx_hash) -> dict`
 
@@ -167,14 +266,46 @@ Submits `MsgInvalidateNonce`.
 
 ### Other chain tx methods
 
-The same client also includes the broader chain tx helpers:
+The same client also includes the broader chain tx helpers.
 
-- bank send
-- market txs
-- CTF txs
-- settlement txs
-- PoA admin txs
-- testnet mint admin txs
+#### Market lifecycle and admin
+
+- `create_market(...)`
+- `create_parlay_market(...)`
+- `create_neg_risk_group(...)`
+- `update_neg_risk_group(...)`
+- `pause_market(...)`
+- `set_market_fee(...)`
+- `resolve_market(...)`
+- `update_market_admin(...)`
+
+#### CTF and composable positions
+
+- `split_position(...)`
+- `merge_positions(...)`
+- `redeem_positions(...)`
+- `convert_neg_risk_position(...)`
+- `collapse_parlay_position(...)`
+
+#### Settlement and settlement admin
+
+- `cancel_orders(...)`
+- `invalidate_nonce(...)`
+- `approve_agent(...)`
+- `revoke_agent(...)`
+- `pause_settlement(...)`
+- `set_matcher_authorization(...)`
+
+#### Chain admin
+
+- `set_validator_set(...)`
+- `update_poa_admin(...)`
+- `admin_mint_usdc(...)`
+- `admin_burn_usdc(...)`
+- `update_testnetmint_admin(...)`
+
+So v2 is not limited to “submit one match tx”.
+It covers the non-trivial chain-native operational flows as well.
 
 ## Sequence Handling
 
@@ -225,3 +356,4 @@ The pool delegates the same tx/query methods as the single relayer client.
 - [examples/submit_match_orders.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/submit_match_orders.py)
 - [examples/relayer_single_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_single_worker.py)
 - [examples/relayer_pool_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_pool_worker.py)
+- [examples/query_and_market_admin.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/query_and_market_admin.py)

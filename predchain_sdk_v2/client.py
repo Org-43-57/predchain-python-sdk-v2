@@ -44,7 +44,7 @@ from .messages import (
     build_msg_update_testnetmint_admin,
     normalize_address,
 )
-from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, RelayerConfig, TxSubmission, ValidatorSlot
+from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
 
 
 class PredchainSDKv2Client:
@@ -187,6 +187,148 @@ class PredchainSDKv2Client:
         return self._request_json(
             "GET",
             self._api_url(f"/cosmos/bank/v1beta1/balances/{parse.quote(normalized, safe='')}"),
+        )
+
+    def account(self, address: str) -> dict[str, Any]:
+        """Fetch one explorer account summary/detail entry by address."""
+        normalized = normalize_address(address)
+        return self._request_json(
+            "GET",
+            self._api_url(f"/predictionmarket/explorer/v1/accounts/{parse.quote(normalized, safe='')}"),
+        )
+
+    def accounts_index(self, sort_by: str = "balance_desc", page: int = 1, limit: int = 25) -> dict[str, Any]:
+        """Fetch paginated explorer account summaries ordered by collateral balance."""
+        params = parse.urlencode(
+            {
+                "sort_by": str(sort_by),
+                "page": int(page),
+                "limit": int(limit),
+            }
+        )
+        return self._request_json("GET", self._api_url(f"/predictionmarket/explorer/v1/accounts?{params}"))
+
+    def authorities(self) -> dict[str, Any]:
+        """Fetch the current market, settlement, PoA, and testnet mint authorities."""
+        return self._request_json("GET", self._api_url("/predictionmarket/explorer/v1/authorities"))
+
+    def settlement_params(self) -> dict[str, Any]:
+        """Fetch settlement module params from the chain-native explorer API."""
+        return self._request_json("GET", self._api_url("/predictionmarket/explorer/v1/settlement/params"))
+
+    def agent_authorization(self, principal: str, agent: str) -> dict[str, Any]:
+        """Fetch one agent authorization edge for a principal/agent pair."""
+        params = parse.urlencode(
+            {
+                "principal": normalize_address(principal),
+                "agent": normalize_address(agent),
+            }
+        )
+        return self._request_json(
+            "GET",
+            self._api_url(f"/predictionmarket/explorer/v1/settlement/agent-authorization?{params}"),
+        )
+
+    def agents_by_principal(self, principal: str, offset: int = 0, limit: int = 50) -> dict[str, Any]:
+        """List paginated agent authorizations granted by one principal."""
+        normalized = normalize_address(principal)
+        params = parse.urlencode({"offset": int(offset), "limit": int(limit)})
+        return self._request_json(
+            "GET",
+            self._api_url(
+                f"/predictionmarket/explorer/v1/settlement/agents/principal/{parse.quote(normalized, safe='')}?{params}"
+            ),
+        )
+
+    def principals_by_agent(self, agent: str, offset: int = 0, limit: int = 50) -> dict[str, Any]:
+        """List paginated principal accounts that authorized one agent."""
+        normalized = normalize_address(agent)
+        params = parse.urlencode({"offset": int(offset), "limit": int(limit)})
+        return self._request_json(
+            "GET",
+            self._api_url(
+                f"/predictionmarket/explorer/v1/settlement/agents/agent/{parse.quote(normalized, safe='')}?{params}"
+            ),
+        )
+
+    def market(self, market_id: int) -> dict[str, Any]:
+        """Fetch one normalized market detail document."""
+        return self._request_json("GET", self._api_url(f"/predictionmarket/explorer/v1/markets/{int(market_id)}"))
+
+    def markets(
+        self,
+        market_type: str | None = None,
+        status: str | None = None,
+        contains: str | None = None,
+        group_id: int | None = None,
+        leg_market_id: int | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> dict[str, Any]:
+        """Fetch paginated market registry data from the chain-native explorer API."""
+        params: dict[str, str] = {}
+        if market_type:
+            params["type"] = str(market_type)
+        if status:
+            params["status"] = str(status)
+        if contains:
+            params["contains"] = str(contains)
+        if group_id is not None:
+            params["group_id"] = str(int(group_id))
+        if leg_market_id is not None:
+            params["leg_market_id"] = str(int(leg_market_id))
+        if sort:
+            params["sort"] = str(sort)
+        if limit is not None:
+            params["limit"] = str(int(limit))
+        if offset is not None:
+            params["offset"] = str(int(offset))
+        suffix = f"?{parse.urlencode(params)}" if params else ""
+        return self._request_json("GET", self._api_url(f"/predictionmarket/explorer/v1/markets{suffix}"))
+
+    def market_by_position(self, position_id: str) -> dict[str, Any]:
+        """Resolve a position id back to its owning market detail."""
+        return self._request_json(
+            "GET",
+            self._api_url(f"/predictionmarket/explorer/v1/markets/by-position/{parse.quote(str(position_id), safe='')}"),
+        )
+
+    def neg_risk_group(self, group_id: int) -> dict[str, Any]:
+        """Fetch one neg-risk group and its grouped market summaries."""
+        return self._request_json(
+            "GET",
+            self._api_url(f"/predictionmarket/explorer/v1/neg-risk-groups/{int(group_id)}"),
+        )
+
+    def order_status(self, order: Order | dict[str, Any]) -> dict[str, Any]:
+        """Fetch current fill/cancel/nonce/expiry state for one settlement order."""
+        return self._request_json(
+            "POST",
+            self._api_url("/predictionmarket/explorer/v1/settlement/order-status"),
+            self._order_payload(order),
+        )
+
+    def order_fill(self, order: Order | dict[str, Any]) -> dict[str, Any]:
+        """Fetch the filled and remaining maker amount for one settlement order."""
+        return self._request_json(
+            "POST",
+            self._api_url("/predictionmarket/explorer/v1/settlement/fill-amount"),
+            self._order_payload(order),
+        )
+
+    def nonce_status(self, signer: str, nonce: int, principal: str | None = None) -> dict[str, Any]:
+        """Check whether one signer/principal nonce is still valid."""
+        params = parse.urlencode(
+            {
+                "signer": normalize_address(signer),
+                "principal": normalize_address(principal or signer),
+                "nonce": int(nonce),
+            }
+        )
+        return self._request_json(
+            "GET",
+            self._api_url(f"/predictionmarket/explorer/v1/settlement/nonce-status?{params}"),
         )
 
     def get_tx(self, tx_hash: str) -> dict[str, Any]:
@@ -550,6 +692,16 @@ class PredchainSDKv2Client:
 
     def _default_gas_limit(self, message: Any) -> int:
         return self.DEFAULT_GAS_LIMITS.get(message.DESCRIPTOR.full_name, 500_000)
+
+    def _order_payload(self, order: Order | dict[str, Any]) -> dict[str, Any]:
+        normalized = to_payload(order)
+        payload = dict(normalized)
+        payload["maker"] = normalize_address(str(payload.get("maker", "")))
+        payload["signer"] = normalize_address(str(payload.get("signer", "")))
+        taker = str(payload.get("taker", "") or "").strip()
+        payload["taker"] = normalize_address(taker) if taker else ""
+        payload["signature"] = str(payload.get("signature", "") or "")
+        return payload
 
     def _pack_any(self, message: Any) -> AnyMessage:
         return AnyMessage(

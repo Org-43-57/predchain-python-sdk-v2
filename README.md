@@ -145,8 +145,10 @@ The pool:
 
 ## Queries And Status
 
-This SDK is not only for submission. The relayer client also includes the
-basic query/status methods a relayer normally needs:
+This SDK is not only for submission. The same client is meant to cover the
+read surface a relayer/operator usually needs as well.
+
+Infrastructure and signer state:
 
 - `status()`
 - `health()`
@@ -156,11 +158,73 @@ basic query/status methods a relayer normally needs:
 - `get_tx()`
 - `wait_for_tx()`
 
-So the same client instance can:
+Explorer-backed chain state:
 
-- check signer/account state
+- `account(address)`
+- `accounts_index(sort_by="balance_desc", page=1, limit=25)`
+- `authorities()`
+- `settlement_params()`
+- `market(market_id)`
+- `markets(...)`
+- `market_by_position(position_id)`
+- `neg_risk_group(group_id)`
+- `agent_authorization(principal, agent)`
+- `agents_by_principal(principal, offset=0, limit=50)`
+- `principals_by_agent(agent, offset=0, limit=50)`
+- `order_status(order)`
+- `order_fill(order)`
+- `nonce_status(signer, nonce, principal=None)`
+
+So one client instance can:
+
+- check relayer readiness
+- inspect authorities/admin ownership
+- inspect market/parlay/neg-risk state
+- inspect settlement order state
 - submit txs
 - inspect tx status later
+
+## Non-Trivial Tx Coverage
+
+The SDK already covers the heavier chain-native tx paths directly, not just
+simple sends or one settlement call.
+
+Market/admin flows:
+
+- `create_market(...)`
+- `create_parlay_market(...)`
+- `create_neg_risk_group(...)`
+- `update_neg_risk_group(...)`
+- `pause_market(...)`
+- `set_market_fee(...)`
+- `resolve_market(...)`
+- `update_market_admin(...)`
+
+CTF flows:
+
+- `split_position(...)`
+- `merge_positions(...)`
+- `redeem_positions(...)`
+- `convert_neg_risk_position(...)`
+- `collapse_parlay_position(...)`
+
+Settlement/admin flows:
+
+- `match_orders(...)`
+- `cancel_orders(...)`
+- `invalidate_nonce(...)`
+- `approve_agent(...)`
+- `revoke_agent(...)`
+- `pause_settlement(...)`
+- `set_matcher_authorization(...)`
+
+Chain admin flows:
+
+- `set_validator_set(...)`
+- `update_poa_admin(...)`
+- `admin_mint_usdc(...)`
+- `admin_burn_usdc(...)`
+- `update_testnetmint_admin(...)`
 
 ## Sequence Handling
 
@@ -190,6 +254,8 @@ The repo includes relayer-style examples:
   - shows how an orderbook hands one ready settlement to one relayer
 - [examples/relayer_pool_worker.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/relayer_pool_worker.py)
   - shows multi-relayer fanout through one relayer abstraction
+- [examples/query_and_market_admin.py](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/examples/query_and_market_admin.py)
+  - shows authority queries plus create market / create parlay / update neg-risk group
 
 ## Return Shape
 
@@ -209,6 +275,7 @@ Important fields:
 ## Documentation
 
 - [docs/transactions.md](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/docs/transactions.md)
+- [docs/queries.md](/Users/valkvalue/IdeaProjects/testss/predchain-python-sdk-v2/docs/queries.md)
 
 ## Regenerating Protobuf Bindings
 

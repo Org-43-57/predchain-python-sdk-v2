@@ -611,9 +611,9 @@ class PredchainSDKv2Client:
         msg = build_msg_invalidate_nonce(signer or self.cfg.signer_address, min_valid_nonce, principal)
         return self.submit_message(msg, signer_address=msg.signer, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def approve_agent(self, agent: str, principal: str | None = None, expires_at_unix: int = 0, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def approve_agent(self, agent: str, principal: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Approve an agent for a principal account."""
-        msg = build_msg_approve_agent(principal or self.cfg.signer_address, agent, expires_at_unix)
+        msg = build_msg_approve_agent(principal or self.cfg.signer_address, agent)
         return self.submit_message(msg, signer_address=msg.principal, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def revoke_agent(self, agent: str, principal: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:

@@ -296,6 +296,8 @@ The same client also includes the broader chain tx helpers.
 - `pause_settlement(...)`
 - `set_matcher_authorization(...)`
 
+`approve_agent(...)` creates a non-expiring agent approval. Use `revoke_agent(...)` to remove access.
+
 #### Chain admin
 
 - `set_validator_set(...)`

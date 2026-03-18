@@ -238,11 +238,10 @@ def build_msg_invalidate_nonce(signer: str, min_valid_nonce: int, principal: str
     )
 
 
-def build_msg_approve_agent(principal: str, agent: str, expires_at_unix: int) -> settlement_tx_pb2.MsgApproveAgent:
+def build_msg_approve_agent(principal: str, agent: str) -> settlement_tx_pb2.MsgApproveAgent:
     return settlement_tx_pb2.MsgApproveAgent(
         principal=normalize_address(principal),
         agent=normalize_address(agent),
-        expires_at_unix=int(expires_at_unix),
     )
 
 

@@ -25,6 +25,7 @@ from .messages import (
     build_msg_create_market,
     build_msg_create_neg_risk_group,
     build_msg_create_parlay_market,
+    build_msg_ensure_parlay_and_match_orders,
     build_msg_invalidate_nonce,
     build_msg_match_orders,
     build_msg_merge_positions,
@@ -35,6 +36,7 @@ from .messages import (
     build_msg_revoke_agent,
     build_msg_send,
     build_msg_set_market_fee,
+    build_msg_set_parlay_default_fee,
     build_msg_set_matcher_authorization,
     build_msg_set_validator_set,
     build_msg_split_position,
@@ -44,7 +46,7 @@ from .messages import (
     build_msg_update_testnetmint_admin,
     normalize_address,
 )
-from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
+from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, ParlayOrder, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
 
 
 class PredchainSDKv2Client:
@@ -70,11 +72,13 @@ class PredchainSDKv2Client:
         "predictionmarket.market.v1.MsgCollapseParlayPosition": 260_000,
         "predictionmarket.market.v1.MsgPauseMarket": 150_000,
         "predictionmarket.market.v1.MsgSetMarketFee": 150_000,
+        "predictionmarket.market.v1.MsgSetParlayDefaultFee": 150_000,
         "predictionmarket.market.v1.MsgResolveMarket": 220_000,
         "predictionmarket.ctf.v1.MsgSplitPosition": 260_000,
         "predictionmarket.ctf.v1.MsgMergePositions": 260_000,
         "predictionmarket.ctf.v1.MsgRedeemPositions": 240_000,
         "predictionmarket.settlement.v1.MsgMatchOrders": 300_000,
+        "predictionmarket.settlement.v1.MsgEnsureParlayAndMatchOrders": 340_000,
         "predictionmarket.settlement.v1.MsgCancelOrders": 180_000,
         "predictionmarket.settlement.v1.MsgInvalidateNonce": 150_000,
         "predictionmarket.settlement.v1.MsgApproveAgent": 150_000,
@@ -536,9 +540,9 @@ class PredchainSDKv2Client:
         msg = build_msg_create_market(authority or self.cfg.signer_address, question, metadata_uri, taker_fee_bps)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def create_parlay_market(self, question: str, legs: list[ParlayLeg], taker_fee_bps: int = 100, metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def create_parlay_market(self, legs: list[ParlayLeg], taker_fee_bps: int = 0, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Create a parlay market from underlying market legs."""
-        msg = build_msg_create_parlay_market(authority or self.cfg.signer_address, question, metadata_uri, taker_fee_bps, legs)
+        msg = build_msg_create_parlay_market(authority or self.cfg.signer_address, legs, taker_fee_bps)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def create_neg_risk_group(self, title: str, market_ids: list[int], metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
@@ -576,6 +580,11 @@ class PredchainSDKv2Client:
         msg = build_msg_set_market_fee(authority or self.cfg.signer_address, market_id, taker_fee_bps)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
+    def set_parlay_default_fee(self, default_taker_fee_bps: int, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+        """Update the default fee used for explicit or on-demand parlay creation."""
+        msg = build_msg_set_parlay_default_fee(authority or self.cfg.signer_address, default_taker_fee_bps)
+        return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+
     def resolve_market(self, market_id: int, winning_outcome: str, resolution_metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Resolve a market to its winning outcome."""
         msg = build_msg_resolve_market(authority or self.cfg.signer_address, market_id, winning_outcome, resolution_metadata_uri)
@@ -599,6 +608,11 @@ class PredchainSDKv2Client:
     def match_orders(self, taker_order: Order | dict[str, Any], maker_orders: list[Order | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Submit one `MsgMatchOrders` using already-signed off-chain orders."""
         msg = build_msg_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient)
+        return self.submit_message(msg, signer_address=msg.submitter, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+
+    def ensure_parlay_and_match_orders(self, taker_order: ParlayOrder | dict[str, Any], maker_orders: list[ParlayOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+        """Submit one `MsgEnsureParlayAndMatchOrders` using already-signed parlay orders."""
+        msg = build_msg_ensure_parlay_and_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient)
         return self.submit_message(msg, signer_address=msg.submitter, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def cancel_orders(self, order_hashes: list[str], signer: str | None = None, principal: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:

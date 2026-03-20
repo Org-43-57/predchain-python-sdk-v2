@@ -54,6 +54,24 @@ class Order:
 
 
 @dataclass(slots=True)
+class ParlayOrder:
+    salt: int
+    maker: str
+    signer: str
+    legs: list[ParlayLeg]
+    position_side: str
+    maker_amount: str
+    taker_amount: str
+    expiration: int
+    nonce: int
+    fee_rate_bps: int
+    side: str
+    signature_type: str = "EOA"
+    taker: str = ""
+    signature: bytes | str = b""
+
+
+@dataclass(slots=True)
 class ValidatorSlot:
     index: int
     name: str

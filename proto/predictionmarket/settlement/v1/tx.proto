@@ -8,6 +8,7 @@ import "cosmos/msg/v1/msg.proto";
 
 service Msg {
   rpc MatchOrders(MsgMatchOrders) returns (MsgMatchOrdersResponse);
+  rpc EnsureParlayAndMatchOrders(MsgEnsureParlayAndMatchOrders) returns (MsgEnsureParlayAndMatchOrdersResponse);
   rpc CancelOrders(MsgCancelOrders) returns (MsgCancelOrdersResponse);
   rpc InvalidateNonce(MsgInvalidateNonce) returns (MsgInvalidateNonceResponse);
   rpc ApproveAgent(MsgApproveAgent) returns (MsgApproveAgentResponse);
@@ -40,6 +41,28 @@ message Order {
   bytes signature = 13;
 }
 
+message ParlayOrderLeg {
+  uint64 market_id = 1;
+  string required_outcome = 2;
+}
+
+message ParlayOrder {
+  uint64 salt = 1;
+  string maker = 2;
+  string signer = 3;
+  string taker = 4;
+  repeated ParlayOrderLeg legs = 5;
+  string position_side = 6;
+  string maker_amount = 7;
+  string taker_amount = 8;
+  int64 expiration = 9;
+  uint64 nonce = 10;
+  uint32 fee_rate_bps = 11;
+  string side = 12;
+  string signature_type = 13;
+  bytes signature = 14;
+}
+
 message MsgMatchOrders {
   option (cosmos.msg.v1.signer) = "submitter";
 
@@ -55,6 +78,27 @@ message MsgMatchOrdersResponse {
   string match_type = 1;
   repeated string refunds = 2;
   string fee_collected = 3;
+}
+
+message MsgEnsureParlayAndMatchOrders {
+  option (cosmos.msg.v1.signer) = "submitter";
+
+  string submitter = 1;
+  ParlayOrder taker_order = 2;
+  repeated ParlayOrder maker_orders = 3;
+  string taker_fill_amount = 4;
+  repeated string maker_fill_amounts = 5;
+  string surplus_recipient = 6;
+}
+
+message MsgEnsureParlayAndMatchOrdersResponse {
+  uint64 parlay_market_id = 1;
+  string yes_position_id = 2;
+  string no_position_id = 3;
+  bool created = 4;
+  string match_type = 5;
+  repeated string refunds = 6;
+  string fee_collected = 7;
 }
 
 message MsgCancelOrders {

@@ -16,6 +16,7 @@ service Msg {
   rpc CollapseParlayPosition(MsgCollapseParlayPosition) returns (MsgCollapseParlayPositionResponse);
   rpc PauseMarket(MsgPauseMarket) returns (MsgPauseMarketResponse);
   rpc SetMarketFee(MsgSetMarketFee) returns (MsgSetMarketFeeResponse);
+  rpc SetParlayDefaultFee(MsgSetParlayDefaultFee) returns (MsgSetParlayDefaultFeeResponse);
   rpc ResolveMarket(MsgResolveMarket) returns (MsgResolveMarketResponse);
 }
 
@@ -45,9 +46,7 @@ message MsgCreateParlayMarket {
   option (cosmos.msg.v1.signer) = "authority";
 
   string authority = 1;
-  string question = 2;
-  string metadata_uri = 3;
-  reserved 4;
+  reserved 2, 3, 4;
   uint32 taker_fee_bps = 5;
   repeated ParlayLeg legs = 6;
 }
@@ -145,6 +144,15 @@ message MsgSetMarketFee {
 }
 
 message MsgSetMarketFeeResponse {}
+
+message MsgSetParlayDefaultFee {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint32 default_taker_fee_bps = 2;
+}
+
+message MsgSetParlayDefaultFeeResponse {}
 
 message MsgResolveMarket {
   option (cosmos.msg.v1.signer) = "authority";

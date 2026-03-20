@@ -276,6 +276,7 @@ The same client also includes the broader chain tx helpers.
 - `update_neg_risk_group(...)`
 - `pause_market(...)`
 - `set_market_fee(...)`
+- `set_parlay_default_fee(...)`
 - `resolve_market(...)`
 - `update_market_admin(...)`
 
@@ -289,6 +290,7 @@ The same client also includes the broader chain tx helpers.
 
 #### Settlement and settlement admin
 
+- `ensure_parlay_and_match_orders(...)`
 - `cancel_orders(...)`
 - `invalidate_nonce(...)`
 - `approve_agent(...)`
@@ -308,6 +310,33 @@ The same client also includes the broader chain tx helpers.
 
 So v2 is not limited to “submit one match tx”.
 It covers the non-trivial chain-native operational flows as well.
+
+### `create_parlay_market(...)`
+
+Creates a parlay market from existing leg markets.
+
+Important behavior:
+
+- there is no user-facing parlay question or metadata field
+- the chain derives the parlay question from the leg markets
+- `taker_fee_bps=0` means “use the current default parlay fee”
+
+### `set_parlay_default_fee(...)`
+
+Updates the admin-controlled default fee used when:
+
+- explicit parlay creation passes `taker_fee_bps=0`
+- on-demand parlay creation inside settlement materializes a missing parlay market
+
+### `ensure_parlay_and_match_orders(...)`
+
+Submits the on-demand parlay settlement flow.
+
+This path:
+
+- matches signed parlay orders that carry `legs` and `position_side`
+- creates the parlay market only if it does not already exist
+- reuses the existing parlay market otherwise
 
 ## Sequence Handling
 

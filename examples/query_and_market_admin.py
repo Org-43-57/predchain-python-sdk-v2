@@ -27,16 +27,21 @@ def main() -> None:
 
     # Create a parlay market from existing underlying markets.
     parlay = client.create_parlay_market(
-        question="Will team A win and team B win?",
-        metadata_uri="ipfs://market/parlay-a-b",
-        taker_fee_bps=100,
         legs=[
             ParlayLeg(market_id=11, required_outcome="YES"),
             ParlayLeg(market_id=12, required_outcome="YES"),
         ],
+        taker_fee_bps=0,
         broadcast_mode="BROADCAST_MODE_SYNC",
     )
     print("create parlay:", parlay.to_dict())
+
+    # Configure the default fee used by explicit or on-demand parlay creation.
+    default_parlay_fee = client.set_parlay_default_fee(
+        default_taker_fee_bps=35,
+        broadcast_mode="BROADCAST_MODE_SYNC",
+    )
+    print("set default parlay fee:", default_parlay_fee.to_dict())
 
     # Extend an existing neg-risk group with new market ids.
     update = client.update_neg_risk_group(

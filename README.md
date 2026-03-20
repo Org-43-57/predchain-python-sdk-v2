@@ -197,6 +197,7 @@ Market/admin flows:
 - `update_neg_risk_group(...)`
 - `pause_market(...)`
 - `set_market_fee(...)`
+- `set_parlay_default_fee(...)`
 - `resolve_market(...)`
 - `update_market_admin(...)`
 
@@ -211,6 +212,7 @@ CTF flows:
 Settlement/admin flows:
 
 - `match_orders(...)`
+- `ensure_parlay_and_match_orders(...)`
 - `cancel_orders(...)`
 - `invalidate_nonce(...)`
 - `approve_agent(...)`

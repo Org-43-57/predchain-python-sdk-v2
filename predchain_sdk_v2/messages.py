@@ -239,8 +239,16 @@ def build_msg_redeem_positions(holder: str, collateral_denom: str, parent_collec
     )
 
 
-def build_msg_match_orders(submitter: str, taker_order: Order | dict, maker_orders: Sequence[Order | dict], taker_fill_amount: str, maker_fill_amounts: Sequence[str], surplus_recipient: str = "") -> settlement_tx_pb2.MsgMatchOrders:
-    return settlement_tx_pb2.MsgMatchOrders(
+def build_msg_match_orders(
+    submitter: str,
+    taker_order: Order | dict,
+    maker_orders: Sequence[Order | dict],
+    taker_fill_amount: str,
+    maker_fill_amounts: Sequence[str],
+    surplus_recipient: str = "",
+    match_fee_bps: int | None = None,
+) -> settlement_tx_pb2.MsgMatchOrders:
+    payload: dict[str, object] = dict(
         submitter=normalize_address(submitter),
         taker_order=order_to_proto(taker_order),
         maker_orders=[order_to_proto(order) for order in maker_orders],
@@ -248,6 +256,9 @@ def build_msg_match_orders(submitter: str, taker_order: Order | dict, maker_orde
         maker_fill_amounts=[str(value) for value in maker_fill_amounts],
         surplus_recipient=normalize_address(surplus_recipient) if str(surplus_recipient).strip() else "",
     )
+    if match_fee_bps is not None:
+        payload["match_fee_bps"] = int(match_fee_bps)
+    return settlement_tx_pb2.MsgMatchOrders(**payload)
 
 
 def build_msg_ensure_parlay_and_match_orders(
@@ -257,8 +268,9 @@ def build_msg_ensure_parlay_and_match_orders(
     taker_fill_amount: str,
     maker_fill_amounts: Sequence[str],
     surplus_recipient: str = "",
+    match_fee_bps: int | None = None,
 ) -> settlement_tx_pb2.MsgEnsureParlayAndMatchOrders:
-    return settlement_tx_pb2.MsgEnsureParlayAndMatchOrders(
+    payload: dict[str, object] = dict(
         submitter=normalize_address(submitter),
         taker_order=parlay_order_to_proto(taker_order),
         maker_orders=[parlay_order_to_proto(order) for order in maker_orders],
@@ -266,6 +278,9 @@ def build_msg_ensure_parlay_and_match_orders(
         maker_fill_amounts=[str(value) for value in maker_fill_amounts],
         surplus_recipient=normalize_address(surplus_recipient) if str(surplus_recipient).strip() else "",
     )
+    if match_fee_bps is not None:
+        payload["match_fee_bps"] = int(match_fee_bps)
+    return settlement_tx_pb2.MsgEnsureParlayAndMatchOrders(**payload)
 
 
 def build_msg_cancel_orders(signer: str, order_hashes: Sequence[str], principal: str = "") -> settlement_tx_pb2.MsgCancelOrders:

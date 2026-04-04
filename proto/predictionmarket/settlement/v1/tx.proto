@@ -72,6 +72,7 @@ message MsgMatchOrders {
   string taker_fill_amount = 4;
   repeated string maker_fill_amounts = 5;
   string surplus_recipient = 6;
+  optional uint32 match_fee_bps = 7;
 }
 
 message MsgMatchOrdersResponse {
@@ -89,6 +90,7 @@ message MsgEnsureParlayAndMatchOrders {
   string taker_fill_amount = 4;
   repeated string maker_fill_amounts = 5;
   string surplus_recipient = 6;
+  optional uint32 match_fee_bps = 7;
 }
 
 message MsgEnsureParlayAndMatchOrdersResponse {

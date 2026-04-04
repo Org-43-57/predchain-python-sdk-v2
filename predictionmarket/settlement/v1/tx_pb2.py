@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from cosmos.msg.v1 import msg_pb2 as cosmos_dot_msg_dot_v1_dot_msg__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'predictionmarket/settlement/v1/tx.proto\x12\x1epredictionmarket.settlement.v1\x1a\x17\x63osmos/msg/v1/msg.proto\"p\n\x12\x41gentAuthorization\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t\x12\x17\n\x0f\x65xpires_at_unix\x18\x03 \x01(\x03\x12\x0e\n\x06\x61\x63tive\x18\x04 \x01(\x08\x12\x0f\n\x07\x65xpired\x18\x05 \x01(\x08\"\xf3\x01\n\x05Order\x12\x0c\n\x04salt\x18\x01 \x01(\x04\x12\r\n\x05maker\x18\x02 \x01(\t\x12\x0e\n\x06signer\x18\x03 \x01(\t\x12\r\n\x05taker\x18\x04 \x01(\t\x12\x10\n\x08token_id\x18\x05 \x01(\t\x12\x14\n\x0cmaker_amount\x18\x06 \x01(\t\x12\x14\n\x0ctaker_amount\x18\x07 \x01(\t\x12\x12\n\nexpiration\x18\x08 \x01(\x03\x12\r\n\x05nonce\x18\t \x01(\x04\x12\x14\n\x0c\x66\x65\x65_rate_bps\x18\n \x01(\r\x12\x0c\n\x04side\x18\x0b \x01(\t\x12\x16\n\x0esignature_type\x18\x0c \x01(\t\x12\x11\n\tsignature\x18\r \x01(\x0c\"=\n\x0eParlayOrderLeg\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x18\n\x10required_outcome\x18\x02 \x01(\t\"\xbc\x02\n\x0bParlayOrder\x12\x0c\n\x04salt\x18\x01 \x01(\x04\x12\r\n\x05maker\x18\x02 \x01(\t\x12\x0e\n\x06signer\x18\x03 \x01(\t\x12\r\n\x05taker\x18\x04 \x01(\t\x12<\n\x04legs\x18\x05 \x03(\x0b\x32..predictionmarket.settlement.v1.ParlayOrderLeg\x12\x15\n\rposition_side\x18\x06 \x01(\t\x12\x14\n\x0cmaker_amount\x18\x07 \x01(\t\x12\x14\n\x0ctaker_amount\x18\x08 \x01(\t\x12\x12\n\nexpiration\x18\t \x01(\x03\x12\r\n\x05nonce\x18\n \x01(\x04\x12\x14\n\x0c\x66\x65\x65_rate_bps\x18\x0b \x01(\r\x12\x0c\n\x04side\x18\x0c \x01(\t\x12\x16\n\x0esignature_type\x18\r \x01(\t\x12\x11\n\tsignature\x18\x0e \x01(\x0c\"\xfe\x01\n\x0eMsgMatchOrders\x12\x11\n\tsubmitter\x18\x01 \x01(\t\x12:\n\x0btaker_order\x18\x02 \x01(\x0b\x32%.predictionmarket.settlement.v1.Order\x12;\n\x0cmaker_orders\x18\x03 \x03(\x0b\x32%.predictionmarket.settlement.v1.Order\x12\x19\n\x11taker_fill_amount\x18\x04 \x01(\t\x12\x1a\n\x12maker_fill_amounts\x18\x05 \x03(\t\x12\x19\n\x11surplus_recipient\x18\x06 \x01(\t:\x0e\x82\xe7\xb0*\tsubmitter\"T\n\x16MsgMatchOrdersResponse\x12\x12\n\nmatch_type\x18\x01 \x01(\t\x12\x0f\n\x07refunds\x18\x02 \x03(\t\x12\x15\n\rfee_collected\x18\x03 \x01(\t\"\x99\x02\n\x1dMsgEnsureParlayAndMatchOrders\x12\x11\n\tsubmitter\x18\x01 \x01(\t\x12@\n\x0btaker_order\x18\x02 \x01(\x0b\x32+.predictionmarket.settlement.v1.ParlayOrder\x12\x41\n\x0cmaker_orders\x18\x03 \x03(\x0b\x32+.predictionmarket.settlement.v1.ParlayOrder\x12\x19\n\x11taker_fill_amount\x18\x04 \x01(\t\x12\x1a\n\x12maker_fill_amounts\x18\x05 \x03(\t\x12\x19\n\x11surplus_recipient\x18\x06 \x01(\t:\x0e\x82\xe7\xb0*\tsubmitter\"\xbf\x01\n%MsgEnsureParlayAndMatchOrdersResponse\x12\x18\n\x10parlay_market_id\x18\x01 \x01(\x04\x12\x17\n\x0fyes_position_id\x18\x02 \x01(\t\x12\x16\n\x0eno_position_id\x18\x03 \x01(\t\x12\x0f\n\x07\x63reated\x18\x04 \x01(\x08\x12\x12\n\nmatch_type\x18\x05 \x01(\t\x12\x0f\n\x07refunds\x18\x06 \x03(\t\x12\x15\n\rfee_collected\x18\x07 \x01(\t\"W\n\x0fMsgCancelOrders\x12\x0e\n\x06signer\x18\x01 \x01(\t\x12\x14\n\x0corder_hashes\x18\x02 \x03(\t\x12\x11\n\tprincipal\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06signer\"\x19\n\x17MsgCancelOrdersResponse\"]\n\x12MsgInvalidateNonce\x12\x0e\n\x06signer\x18\x01 \x01(\t\x12\x17\n\x0fmin_valid_nonce\x18\x02 \x01(\x04\x12\x11\n\tprincipal\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06signer\"\x1c\n\x1aMsgInvalidateNonceResponse\"\\\n\x0fMsgApproveAgent\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t\x12\x17\n\x0f\x65xpires_at_unix\x18\x03 \x01(\x03:\x0e\x82\xe7\xb0*\tprincipal\"d\n\x17MsgApproveAgentResponse\x12I\n\rauthorization\x18\x01 \x01(\x0b\x32\x32.predictionmarket.settlement.v1.AgentAuthorization\"B\n\x0eMsgRevokeAgent\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t:\x0e\x82\xe7\xb0*\tprincipal\"\x18\n\x16MsgRevokeAgentResponse\"G\n\x12MsgPauseSettlement\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x0e\n\x06paused\x18\x02 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\"\x1c\n\x1aMsgPauseSettlementResponse\"a\n\x1aMsgSetMatcherAuthorization\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x0f\n\x07matcher\x18\x02 \x01(\t\x12\x0f\n\x07\x61llowed\x18\x03 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\">\n\"MsgSetMatcherAuthorizationResponse\x12\x18\n\x10\x61llowed_matchers\x18\x01 \x03(\t2\xb0\x08\n\x03Msg\x12u\n\x0bMatchOrders\x12..predictionmarket.settlement.v1.MsgMatchOrders\x1a\x36.predictionmarket.settlement.v1.MsgMatchOrdersResponse\x12\xa2\x01\n\x1a\x45nsureParlayAndMatchOrders\x12=.predictionmarket.settlement.v1.MsgEnsureParlayAndMatchOrders\x1a\x45.predictionmarket.settlement.v1.MsgEnsureParlayAndMatchOrdersResponse\x12x\n\x0c\x43\x61ncelOrders\x12/.predictionmarket.settlement.v1.MsgCancelOrders\x1a\x37.predictionmarket.settlement.v1.MsgCancelOrdersResponse\x12\x81\x01\n\x0fInvalidateNonce\x12\x32.predictionmarket.settlement.v1.MsgInvalidateNonce\x1a:.predictionmarket.settlement.v1.MsgInvalidateNonceResponse\x12x\n\x0c\x41pproveAgent\x12/.predictionmarket.settlement.v1.MsgApproveAgent\x1a\x37.predictionmarket.settlement.v1.MsgApproveAgentResponse\x12u\n\x0bRevokeAgent\x12..predictionmarket.settlement.v1.MsgRevokeAgent\x1a\x36.predictionmarket.settlement.v1.MsgRevokeAgentResponse\x12\x81\x01\n\x0fPauseSettlement\x12\x32.predictionmarket.settlement.v1.MsgPauseSettlement\x1a:.predictionmarket.settlement.v1.MsgPauseSettlementResponse\x12\x99\x01\n\x17SetMatcherAuthorization\x12:.predictionmarket.settlement.v1.MsgSetMatcherAuthorization\x1a\x42.predictionmarket.settlement.v1.MsgSetMatcherAuthorizationResponseBSZQgithub.com/Org-43-57/predchaind/proto/predictionmarket/settlement/v1;settlementv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'predictionmarket/settlement/v1/tx.proto\x12\x1epredictionmarket.settlement.v1\x1a\x17\x63osmos/msg/v1/msg.proto\"p\n\x12\x41gentAuthorization\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t\x12\x17\n\x0f\x65xpires_at_unix\x18\x03 \x01(\x03\x12\x0e\n\x06\x61\x63tive\x18\x04 \x01(\x08\x12\x0f\n\x07\x65xpired\x18\x05 \x01(\x08\"\xf3\x01\n\x05Order\x12\x0c\n\x04salt\x18\x01 \x01(\x04\x12\r\n\x05maker\x18\x02 \x01(\t\x12\x0e\n\x06signer\x18\x03 \x01(\t\x12\r\n\x05taker\x18\x04 \x01(\t\x12\x10\n\x08token_id\x18\x05 \x01(\t\x12\x14\n\x0cmaker_amount\x18\x06 \x01(\t\x12\x14\n\x0ctaker_amount\x18\x07 \x01(\t\x12\x12\n\nexpiration\x18\x08 \x01(\x03\x12\r\n\x05nonce\x18\t \x01(\x04\x12\x14\n\x0c\x66\x65\x65_rate_bps\x18\n \x01(\r\x12\x0c\n\x04side\x18\x0b \x01(\t\x12\x16\n\x0esignature_type\x18\x0c \x01(\t\x12\x11\n\tsignature\x18\r \x01(\x0c\"=\n\x0eParlayOrderLeg\x12\x11\n\tmarket_id\x18\x01 \x01(\x04\x12\x18\n\x10required_outcome\x18\x02 \x01(\t\"\xbc\x02\n\x0bParlayOrder\x12\x0c\n\x04salt\x18\x01 \x01(\x04\x12\r\n\x05maker\x18\x02 \x01(\t\x12\x0e\n\x06signer\x18\x03 \x01(\t\x12\r\n\x05taker\x18\x04 \x01(\t\x12<\n\x04legs\x18\x05 \x03(\x0b\x32..predictionmarket.settlement.v1.ParlayOrderLeg\x12\x15\n\rposition_side\x18\x06 \x01(\t\x12\x14\n\x0cmaker_amount\x18\x07 \x01(\t\x12\x14\n\x0ctaker_amount\x18\x08 \x01(\t\x12\x12\n\nexpiration\x18\t \x01(\x03\x12\r\n\x05nonce\x18\n \x01(\x04\x12\x14\n\x0c\x66\x65\x65_rate_bps\x18\x0b \x01(\r\x12\x0c\n\x04side\x18\x0c \x01(\t\x12\x16\n\x0esignature_type\x18\r \x01(\t\x12\x11\n\tsignature\x18\x0e \x01(\x0c\"\xac\x02\n\x0eMsgMatchOrders\x12\x11\n\tsubmitter\x18\x01 \x01(\t\x12:\n\x0btaker_order\x18\x02 \x01(\x0b\x32%.predictionmarket.settlement.v1.Order\x12;\n\x0cmaker_orders\x18\x03 \x03(\x0b\x32%.predictionmarket.settlement.v1.Order\x12\x19\n\x11taker_fill_amount\x18\x04 \x01(\t\x12\x1a\n\x12maker_fill_amounts\x18\x05 \x03(\t\x12\x19\n\x11surplus_recipient\x18\x06 \x01(\t\x12\x1a\n\rmatch_fee_bps\x18\x07 \x01(\rH\x00\x88\x01\x01:\x0e\x82\xe7\xb0*\tsubmitterB\x10\n\x0e_match_fee_bps\"T\n\x16MsgMatchOrdersResponse\x12\x12\n\nmatch_type\x18\x01 \x01(\t\x12\x0f\n\x07refunds\x18\x02 \x03(\t\x12\x15\n\rfee_collected\x18\x03 \x01(\t\"\xc7\x02\n\x1dMsgEnsureParlayAndMatchOrders\x12\x11\n\tsubmitter\x18\x01 \x01(\t\x12@\n\x0btaker_order\x18\x02 \x01(\x0b\x32+.predictionmarket.settlement.v1.ParlayOrder\x12\x41\n\x0cmaker_orders\x18\x03 \x03(\x0b\x32+.predictionmarket.settlement.v1.ParlayOrder\x12\x19\n\x11taker_fill_amount\x18\x04 \x01(\t\x12\x1a\n\x12maker_fill_amounts\x18\x05 \x03(\t\x12\x19\n\x11surplus_recipient\x18\x06 \x01(\t\x12\x1a\n\rmatch_fee_bps\x18\x07 \x01(\rH\x00\x88\x01\x01:\x0e\x82\xe7\xb0*\tsubmitterB\x10\n\x0e_match_fee_bps\"\xbf\x01\n%MsgEnsureParlayAndMatchOrdersResponse\x12\x18\n\x10parlay_market_id\x18\x01 \x01(\x04\x12\x17\n\x0fyes_position_id\x18\x02 \x01(\t\x12\x16\n\x0eno_position_id\x18\x03 \x01(\t\x12\x0f\n\x07\x63reated\x18\x04 \x01(\x08\x12\x12\n\nmatch_type\x18\x05 \x01(\t\x12\x0f\n\x07refunds\x18\x06 \x03(\t\x12\x15\n\rfee_collected\x18\x07 \x01(\t\"W\n\x0fMsgCancelOrders\x12\x0e\n\x06signer\x18\x01 \x01(\t\x12\x14\n\x0corder_hashes\x18\x02 \x03(\t\x12\x11\n\tprincipal\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06signer\"\x19\n\x17MsgCancelOrdersResponse\"]\n\x12MsgInvalidateNonce\x12\x0e\n\x06signer\x18\x01 \x01(\t\x12\x17\n\x0fmin_valid_nonce\x18\x02 \x01(\x04\x12\x11\n\tprincipal\x18\x03 \x01(\t:\x0b\x82\xe7\xb0*\x06signer\"\x1c\n\x1aMsgInvalidateNonceResponse\"\\\n\x0fMsgApproveAgent\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t\x12\x17\n\x0f\x65xpires_at_unix\x18\x03 \x01(\x03:\x0e\x82\xe7\xb0*\tprincipal\"d\n\x17MsgApproveAgentResponse\x12I\n\rauthorization\x18\x01 \x01(\x0b\x32\x32.predictionmarket.settlement.v1.AgentAuthorization\"B\n\x0eMsgRevokeAgent\x12\x11\n\tprincipal\x18\x01 \x01(\t\x12\r\n\x05\x61gent\x18\x02 \x01(\t:\x0e\x82\xe7\xb0*\tprincipal\"\x18\n\x16MsgRevokeAgentResponse\"G\n\x12MsgPauseSettlement\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x0e\n\x06paused\x18\x02 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\"\x1c\n\x1aMsgPauseSettlementResponse\"a\n\x1aMsgSetMatcherAuthorization\x12\x11\n\tauthority\x18\x01 \x01(\t\x12\x0f\n\x07matcher\x18\x02 \x01(\t\x12\x0f\n\x07\x61llowed\x18\x03 \x01(\x08:\x0e\x82\xe7\xb0*\tauthority\">\n\"MsgSetMatcherAuthorizationResponse\x12\x18\n\x10\x61llowed_matchers\x18\x01 \x03(\t2\xb0\x08\n\x03Msg\x12u\n\x0bMatchOrders\x12..predictionmarket.settlement.v1.MsgMatchOrders\x1a\x36.predictionmarket.settlement.v1.MsgMatchOrdersResponse\x12\xa2\x01\n\x1a\x45nsureParlayAndMatchOrders\x12=.predictionmarket.settlement.v1.MsgEnsureParlayAndMatchOrders\x1a\x45.predictionmarket.settlement.v1.MsgEnsureParlayAndMatchOrdersResponse\x12x\n\x0c\x43\x61ncelOrders\x12/.predictionmarket.settlement.v1.MsgCancelOrders\x1a\x37.predictionmarket.settlement.v1.MsgCancelOrdersResponse\x12\x81\x01\n\x0fInvalidateNonce\x12\x32.predictionmarket.settlement.v1.MsgInvalidateNonce\x1a:.predictionmarket.settlement.v1.MsgInvalidateNonceResponse\x12x\n\x0c\x41pproveAgent\x12/.predictionmarket.settlement.v1.MsgApproveAgent\x1a\x37.predictionmarket.settlement.v1.MsgApproveAgentResponse\x12u\n\x0bRevokeAgent\x12..predictionmarket.settlement.v1.MsgRevokeAgent\x1a\x36.predictionmarket.settlement.v1.MsgRevokeAgentResponse\x12\x81\x01\n\x0fPauseSettlement\x12\x32.predictionmarket.settlement.v1.MsgPauseSettlement\x1a:.predictionmarket.settlement.v1.MsgPauseSettlementResponse\x12\x99\x01\n\x17SetMatcherAuthorization\x12:.predictionmarket.settlement.v1.MsgSetMatcherAuthorization\x1a\x42.predictionmarket.settlement.v1.MsgSetMatcherAuthorizationResponseBSZQgithub.com/Org-43-57/predchaind/proto/predictionmarket/settlement/v1;settlementv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -58,37 +58,37 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PARLAYORDER']._serialized_start=524
   _globals['_PARLAYORDER']._serialized_end=840
   _globals['_MSGMATCHORDERS']._serialized_start=843
-  _globals['_MSGMATCHORDERS']._serialized_end=1097
-  _globals['_MSGMATCHORDERSRESPONSE']._serialized_start=1099
-  _globals['_MSGMATCHORDERSRESPONSE']._serialized_end=1183
-  _globals['_MSGENSUREPARLAYANDMATCHORDERS']._serialized_start=1186
-  _globals['_MSGENSUREPARLAYANDMATCHORDERS']._serialized_end=1467
-  _globals['_MSGENSUREPARLAYANDMATCHORDERSRESPONSE']._serialized_start=1470
-  _globals['_MSGENSUREPARLAYANDMATCHORDERSRESPONSE']._serialized_end=1661
-  _globals['_MSGCANCELORDERS']._serialized_start=1663
-  _globals['_MSGCANCELORDERS']._serialized_end=1750
-  _globals['_MSGCANCELORDERSRESPONSE']._serialized_start=1752
-  _globals['_MSGCANCELORDERSRESPONSE']._serialized_end=1777
-  _globals['_MSGINVALIDATENONCE']._serialized_start=1779
-  _globals['_MSGINVALIDATENONCE']._serialized_end=1872
-  _globals['_MSGINVALIDATENONCERESPONSE']._serialized_start=1874
-  _globals['_MSGINVALIDATENONCERESPONSE']._serialized_end=1902
-  _globals['_MSGAPPROVEAGENT']._serialized_start=1904
-  _globals['_MSGAPPROVEAGENT']._serialized_end=1996
-  _globals['_MSGAPPROVEAGENTRESPONSE']._serialized_start=1998
-  _globals['_MSGAPPROVEAGENTRESPONSE']._serialized_end=2098
-  _globals['_MSGREVOKEAGENT']._serialized_start=2100
-  _globals['_MSGREVOKEAGENT']._serialized_end=2166
-  _globals['_MSGREVOKEAGENTRESPONSE']._serialized_start=2168
-  _globals['_MSGREVOKEAGENTRESPONSE']._serialized_end=2192
-  _globals['_MSGPAUSESETTLEMENT']._serialized_start=2194
-  _globals['_MSGPAUSESETTLEMENT']._serialized_end=2265
-  _globals['_MSGPAUSESETTLEMENTRESPONSE']._serialized_start=2267
-  _globals['_MSGPAUSESETTLEMENTRESPONSE']._serialized_end=2295
-  _globals['_MSGSETMATCHERAUTHORIZATION']._serialized_start=2297
-  _globals['_MSGSETMATCHERAUTHORIZATION']._serialized_end=2394
-  _globals['_MSGSETMATCHERAUTHORIZATIONRESPONSE']._serialized_start=2396
-  _globals['_MSGSETMATCHERAUTHORIZATIONRESPONSE']._serialized_end=2458
-  _globals['_MSG']._serialized_start=2461
-  _globals['_MSG']._serialized_end=3533
+  _globals['_MSGMATCHORDERS']._serialized_end=1143
+  _globals['_MSGMATCHORDERSRESPONSE']._serialized_start=1145
+  _globals['_MSGMATCHORDERSRESPONSE']._serialized_end=1229
+  _globals['_MSGENSUREPARLAYANDMATCHORDERS']._serialized_start=1232
+  _globals['_MSGENSUREPARLAYANDMATCHORDERS']._serialized_end=1559
+  _globals['_MSGENSUREPARLAYANDMATCHORDERSRESPONSE']._serialized_start=1562
+  _globals['_MSGENSUREPARLAYANDMATCHORDERSRESPONSE']._serialized_end=1753
+  _globals['_MSGCANCELORDERS']._serialized_start=1755
+  _globals['_MSGCANCELORDERS']._serialized_end=1842
+  _globals['_MSGCANCELORDERSRESPONSE']._serialized_start=1844
+  _globals['_MSGCANCELORDERSRESPONSE']._serialized_end=1869
+  _globals['_MSGINVALIDATENONCE']._serialized_start=1871
+  _globals['_MSGINVALIDATENONCE']._serialized_end=1964
+  _globals['_MSGINVALIDATENONCERESPONSE']._serialized_start=1966
+  _globals['_MSGINVALIDATENONCERESPONSE']._serialized_end=1994
+  _globals['_MSGAPPROVEAGENT']._serialized_start=1996
+  _globals['_MSGAPPROVEAGENT']._serialized_end=2088
+  _globals['_MSGAPPROVEAGENTRESPONSE']._serialized_start=2090
+  _globals['_MSGAPPROVEAGENTRESPONSE']._serialized_end=2190
+  _globals['_MSGREVOKEAGENT']._serialized_start=2192
+  _globals['_MSGREVOKEAGENT']._serialized_end=2258
+  _globals['_MSGREVOKEAGENTRESPONSE']._serialized_start=2260
+  _globals['_MSGREVOKEAGENTRESPONSE']._serialized_end=2284
+  _globals['_MSGPAUSESETTLEMENT']._serialized_start=2286
+  _globals['_MSGPAUSESETTLEMENT']._serialized_end=2357
+  _globals['_MSGPAUSESETTLEMENTRESPONSE']._serialized_start=2359
+  _globals['_MSGPAUSESETTLEMENTRESPONSE']._serialized_end=2387
+  _globals['_MSGSETMATCHERAUTHORIZATION']._serialized_start=2389
+  _globals['_MSGSETMATCHERAUTHORIZATION']._serialized_end=2486
+  _globals['_MSGSETMATCHERAUTHORIZATIONRESPONSE']._serialized_start=2488
+  _globals['_MSGSETMATCHERAUTHORIZATIONRESPONSE']._serialized_end=2550
+  _globals['_MSG']._serialized_start=2553
+  _globals['_MSG']._serialized_end=3625
 # @@protoc_insertion_point(module_scope)

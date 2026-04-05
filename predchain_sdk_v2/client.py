@@ -45,6 +45,7 @@ from .messages import (
     build_msg_update_poa_admin,
     build_msg_update_testnetmint_admin,
     normalize_address,
+    normalize_uint256,
 )
 from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, ParlayOrder, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
 
@@ -327,7 +328,7 @@ class PredchainSDKv2Client:
             {
                 "signer": normalize_address(signer),
                 "principal": normalize_address(principal or signer),
-                "nonce": str(nonce),
+                "nonce": normalize_uint256(nonce, "nonce"),
             }
         )
         return self._request_json(

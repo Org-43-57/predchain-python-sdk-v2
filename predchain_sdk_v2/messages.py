@@ -13,9 +13,23 @@ from predictionmarket.testnetmint.v1 import tx_pb2 as testnetmint_tx_pb2
 from .crypto import decode_hex, normalize_hex
 from .models import Coin, Order, ParlayLeg, ParlayOrder, ValidatorSlot
 
+UINT256_MAX = (1 << 256) - 1
+
 
 def normalize_address(value: str) -> str:
     return f"0x{normalize_hex(value).lower()}"
+
+
+def normalize_uint256(value: int | str, field_name: str) -> str:
+    try:
+        normalized = int(str(value), 0)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be a valid uint256") from exc
+    if normalized < 0:
+        raise ValueError(f"{field_name} must be non-negative")
+    if normalized > UINT256_MAX:
+        raise ValueError(f"{field_name} must fit in uint256")
+    return str(normalized)
 
 
 def coins_to_proto(coins: Sequence[Coin]) -> list[cosmos_coin_pb2.Coin]:
@@ -31,7 +45,7 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
     else:
         signature_bytes = bytes(signature)
     return settlement_tx_pb2.Order(
-        salt=str(order.salt),
+        salt=normalize_uint256(order.salt, "salt"),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
@@ -39,7 +53,7 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
-        nonce=str(order.nonce),
+        nonce=normalize_uint256(order.nonce, "nonce"),
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),
@@ -56,7 +70,7 @@ def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.Parlay
     else:
         signature_bytes = bytes(signature)
     return settlement_tx_pb2.ParlayOrder(
-        salt=str(order.salt),
+        salt=normalize_uint256(order.salt, "salt"),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
@@ -65,7 +79,7 @@ def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.Parlay
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
-        nonce=str(order.nonce),
+        nonce=normalize_uint256(order.nonce, "nonce"),
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),
@@ -280,7 +294,7 @@ def build_msg_invalidate_nonce(signer: str, min_valid_nonce: int | str, principa
     return settlement_tx_pb2.MsgInvalidateNonce(
         signer=normalize_address(signer),
         principal=normalize_address(principal) if str(principal).strip() else "",
-        min_valid_nonce=str(min_valid_nonce),
+        min_valid_nonce=normalize_uint256(min_valid_nonce, "min_valid_nonce"),
     )
 
 

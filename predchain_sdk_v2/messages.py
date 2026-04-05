@@ -276,11 +276,11 @@ def build_msg_cancel_orders(signer: str, order_hashes: Sequence[str], principal:
     )
 
 
-def build_msg_invalidate_nonce(signer: str, min_valid_nonce: int, principal: str = "") -> settlement_tx_pb2.MsgInvalidateNonce:
+def build_msg_invalidate_nonce(signer: str, min_valid_nonce: int | str, principal: str = "") -> settlement_tx_pb2.MsgInvalidateNonce:
     return settlement_tx_pb2.MsgInvalidateNonce(
         signer=normalize_address(signer),
         principal=normalize_address(principal) if str(principal).strip() else "",
-        min_valid_nonce=int(min_valid_nonce),
+        min_valid_nonce=str(min_valid_nonce),
     )
 
 

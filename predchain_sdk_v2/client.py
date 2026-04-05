@@ -321,13 +321,13 @@ class PredchainSDKv2Client:
             self._order_payload(order),
         )
 
-    def nonce_status(self, signer: str, nonce: int, principal: str | None = None) -> dict[str, Any]:
+    def nonce_status(self, signer: str, nonce: int | str, principal: str | None = None) -> dict[str, Any]:
         """Check whether one signer/principal nonce is still valid."""
         params = parse.urlencode(
             {
                 "signer": normalize_address(signer),
                 "principal": normalize_address(principal or signer),
-                "nonce": int(nonce),
+                "nonce": str(nonce),
             }
         )
         return self._request_json(
@@ -620,7 +620,7 @@ class PredchainSDKv2Client:
         msg = build_msg_cancel_orders(signer or self.cfg.signer_address, order_hashes, principal)
         return self.submit_message(msg, signer_address=msg.signer, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def invalidate_nonce(self, min_valid_nonce: int, signer: str | None = None, principal: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def invalidate_nonce(self, min_valid_nonce: int | str, signer: str | None = None, principal: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Raise the minimum valid nonce for one signer/principal pair."""
         msg = build_msg_invalidate_nonce(signer or self.cfg.signer_address, min_valid_nonce, principal)
         return self.submit_message(msg, signer_address=msg.signer, gas_limit=gas_limit, broadcast_mode=broadcast_mode)

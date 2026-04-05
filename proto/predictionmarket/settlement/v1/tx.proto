@@ -13,6 +13,7 @@ service Msg {
   rpc InvalidateNonce(MsgInvalidateNonce) returns (MsgInvalidateNonceResponse);
   rpc ApproveAgent(MsgApproveAgent) returns (MsgApproveAgentResponse);
   rpc RevokeAgent(MsgRevokeAgent) returns (MsgRevokeAgentResponse);
+  rpc ApproveAgentBySig(MsgApproveAgentBySig) returns (MsgApproveAgentResponse);
   rpc PauseSettlement(MsgPauseSettlement) returns (MsgPauseSettlementResponse);
   rpc SetMatcherAuthorization(MsgSetMatcherAuthorization) returns (MsgSetMatcherAuthorizationResponse);
 }
@@ -20,9 +21,7 @@ service Msg {
 message AgentAuthorization {
   string principal = 1;
   string agent = 2;
-  int64 expires_at_unix = 3;
-  bool active = 4;
-  bool expired = 5;
+  bool active = 3;
 }
 
 message Order {
@@ -72,6 +71,7 @@ message MsgMatchOrders {
   string taker_fill_amount = 4;
   repeated string maker_fill_amounts = 5;
   string surplus_recipient = 6;
+  optional uint32 match_fee_bps = 7;
 }
 
 message MsgMatchOrdersResponse {
@@ -89,6 +89,7 @@ message MsgEnsureParlayAndMatchOrders {
   string taker_fill_amount = 4;
   repeated string maker_fill_amounts = 5;
   string surplus_recipient = 6;
+  optional uint32 match_fee_bps = 7;
 }
 
 message MsgEnsureParlayAndMatchOrdersResponse {
@@ -115,7 +116,7 @@ message MsgInvalidateNonce {
   option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
-  uint64 min_valid_nonce = 2;
+  string min_valid_nonce = 2;
   string principal = 3;
 }
 
@@ -126,7 +127,6 @@ message MsgApproveAgent {
 
   string principal = 1;
   string agent = 2;
-  int64 expires_at_unix = 3;
 }
 
 message MsgApproveAgentResponse {
@@ -141,6 +141,17 @@ message MsgRevokeAgent {
 }
 
 message MsgRevokeAgentResponse {}
+
+message MsgApproveAgentBySig {
+  option (cosmos.msg.v1.signer) = "submitter";
+
+  string submitter = 1;
+  string principal = 2;
+  string agent = 3;
+  uint64 nonce = 4;
+  int64 deadline_unix = 5;
+  bytes signature = 6;
+}
 
 message MsgPauseSettlement {
   option (cosmos.msg.v1.signer) = "authority";

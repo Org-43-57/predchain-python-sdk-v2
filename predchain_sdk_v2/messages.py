@@ -31,7 +31,7 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
     else:
         signature_bytes = bytes(signature)
     return settlement_tx_pb2.Order(
-        salt=int(order.salt),
+        salt=str(order.salt),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
@@ -39,7 +39,7 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
-        nonce=int(order.nonce),
+        nonce=str(order.nonce),
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),
@@ -56,7 +56,7 @@ def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.Parlay
     else:
         signature_bytes = bytes(signature)
     return settlement_tx_pb2.ParlayOrder(
-        salt=int(order.salt),
+        salt=str(order.salt),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
@@ -65,7 +65,7 @@ def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.Parlay
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
-        nonce=int(order.nonce),
+        nonce=str(order.nonce),
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),

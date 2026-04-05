@@ -38,14 +38,14 @@ class ParlayLeg:
 
 @dataclass(slots=True)
 class Order:
-    salt: int
+    salt: int | str
     maker: str
     signer: str
     token_id: str
     maker_amount: str
     taker_amount: str
     expiration: int
-    nonce: int
+    nonce: int | str
     fee_rate_bps: int
     side: str
     signature_type: str = "EOA"
@@ -55,7 +55,7 @@ class Order:
 
 @dataclass(slots=True)
 class ParlayOrder:
-    salt: int
+    salt: int | str
     maker: str
     signer: str
     legs: list[ParlayLeg]
@@ -63,7 +63,7 @@ class ParlayOrder:
     maker_amount: str
     taker_amount: str
     expiration: int
-    nonce: int
+    nonce: int | str
     fee_rate_bps: int
     side: str
     signature_type: str = "EOA"

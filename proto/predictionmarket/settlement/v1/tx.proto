@@ -38,6 +38,8 @@ message Order {
   string side = 11;
   string signature_type = 12;
   bytes signature = 13;
+  repeated ParlayOrderLeg legs = 14;
+  string position_side = 15;
 }
 
 message ParlayOrderLeg {

@@ -51,6 +51,19 @@ def _settlement_parlay_legs(legs: Sequence[ParlayLeg | dict]) -> list[settlement
     return out
 
 
+def _token_order_ref(token_id: str) -> settlement_tx_pb2.OrderRef:
+    return settlement_tx_pb2.OrderRef(token_id=str(token_id))
+
+
+def _parlay_order_ref(legs: Sequence[ParlayLeg | dict], position_side: str) -> settlement_tx_pb2.OrderRef:
+    return settlement_tx_pb2.OrderRef(
+        parlay=settlement_tx_pb2.ParlayRef(
+            legs=_settlement_parlay_legs(legs),
+            position_side=str(position_side),
+        )
+    )
+
+
 def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
     if isinstance(order, dict):
         order = Order(**order)
@@ -59,7 +72,7 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
-        token_id=str(order.token_id),
+        ref=_token_order_ref(order.token_id),
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
@@ -86,20 +99,19 @@ def match_order_to_proto(order: MatchOrder | dict) -> settlement_tx_pb2.Order:
             raise ValueError("match order must specify token_id or legs+position_side")
     if isinstance(order, ParlayOrder):
         return settlement_tx_pb2.Order(
-            salt=int(order.salt),
+            salt=normalize_uint256(order.salt, "salt"),
             maker=normalize_address(order.maker),
             signer=normalize_address(order.signer),
             taker=normalize_address(order.taker) if str(order.taker).strip() else "",
+            ref=_parlay_order_ref(order.legs, order.position_side),
             maker_amount=str(order.maker_amount),
             taker_amount=str(order.taker_amount),
             expiration=int(order.expiration),
-            nonce=int(order.nonce),
+            nonce=normalize_uint256(order.nonce, "nonce"),
             fee_rate_bps=int(order.fee_rate_bps),
             side=str(order.side),
             signature_type=str(order.signature_type),
             signature=_signature_bytes(order.signature),
-            legs=_settlement_parlay_legs(order.legs),
-            position_side=str(order.position_side),
         )
     return order_to_proto(order)
 
@@ -259,9 +271,8 @@ def build_msg_resolve_market(authority: str, market_id: int, winning_outcome: st
     )
 
 
-def build_msg_split_position(actor: str, holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgSplitPosition:
+def build_msg_split_position(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgSplitPosition:
     return ctf_tx_pb2.MsgSplitPosition(
-        actor=normalize_address(actor),
         holder=normalize_address(holder),
         collateral_denom=str(collateral_denom),
         parent_collection_id=str(parent_collection_id),
@@ -271,9 +282,8 @@ def build_msg_split_position(actor: str, holder: str, collateral_denom: str, par
     )
 
 
-def build_msg_merge_positions(actor: str, holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgMergePositions:
+def build_msg_merge_positions(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgMergePositions:
     return ctf_tx_pb2.MsgMergePositions(
-        actor=normalize_address(actor),
         holder=normalize_address(holder),
         collateral_denom=str(collateral_denom),
         parent_collection_id=str(parent_collection_id),

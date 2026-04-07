@@ -591,20 +591,23 @@ class PredchainSDKv2Client:
         msg = build_msg_resolve_market(authority or self.cfg.signer_address, market_id, winning_outcome, resolution_metadata_uri)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def split_position(self, condition_id: str, amount: str, partition: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def split_position(self, condition_id: str, amount: str, partition: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, actor: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Split collateral into CTF positions."""
-        msg = build_msg_split_position(holder or self.cfg.signer_address, collateral_denom, parent_collection_id, condition_id, partition, amount)
-        return self.submit_message(msg, signer_address=msg.holder, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+        effective_holder = holder or self.cfg.signer_address
+        msg = build_msg_split_position(effective_holder, collateral_denom, parent_collection_id, condition_id, partition, amount, actor=actor or effective_holder)
+        return self.submit_message(msg, signer_address=msg.actor, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def merge_positions(self, condition_id: str, amount: str, partition: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def merge_positions(self, condition_id: str, amount: str, partition: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, actor: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Merge sibling CTF positions back into collateral."""
-        msg = build_msg_merge_positions(holder or self.cfg.signer_address, collateral_denom, parent_collection_id, condition_id, partition, amount)
-        return self.submit_message(msg, signer_address=msg.holder, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+        effective_holder = holder or self.cfg.signer_address
+        msg = build_msg_merge_positions(effective_holder, collateral_denom, parent_collection_id, condition_id, partition, amount, actor=actor or effective_holder)
+        return self.submit_message(msg, signer_address=msg.actor, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def redeem_positions(self, condition_id: str, index_sets: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def redeem_positions(self, condition_id: str, index_sets: list[int], collateral_denom: str = "uusdc", parent_collection_id: str = "0", holder: str | None = None, actor: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Redeem winning CTF positions for collateral."""
-        msg = build_msg_redeem_positions(holder or self.cfg.signer_address, collateral_denom, parent_collection_id, condition_id, index_sets)
-        return self.submit_message(msg, signer_address=msg.holder, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
+        effective_holder = holder or self.cfg.signer_address
+        msg = build_msg_redeem_positions(effective_holder, collateral_denom, parent_collection_id, condition_id, index_sets, actor=actor or "")
+        return self.submit_message(msg, signer_address=(msg.actor or msg.holder), gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def match_orders(self, taker_order: Order | dict[str, Any], maker_orders: list[Order | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Submit one `MsgMatchOrders` using already-signed off-chain orders."""

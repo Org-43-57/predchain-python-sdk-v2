@@ -221,9 +221,11 @@ def build_msg_resolve_market(authority: str, market_id: int, winning_outcome: st
     )
 
 
-def build_msg_split_position(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgSplitPosition:
+def build_msg_split_position(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str, actor: str = "") -> ctf_tx_pb2.MsgSplitPosition:
+    normalized_holder = normalize_address(holder)
     return ctf_tx_pb2.MsgSplitPosition(
-        holder=normalize_address(holder),
+        actor=normalize_address(actor) if str(actor).strip() else normalized_holder,
+        holder=normalized_holder,
         collateral_denom=str(collateral_denom),
         parent_collection_id=str(parent_collection_id),
         condition_id=str(condition_id),
@@ -232,9 +234,11 @@ def build_msg_split_position(holder: str, collateral_denom: str, parent_collecti
     )
 
 
-def build_msg_merge_positions(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str) -> ctf_tx_pb2.MsgMergePositions:
+def build_msg_merge_positions(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, partition: Sequence[int], amount: str, actor: str = "") -> ctf_tx_pb2.MsgMergePositions:
+    normalized_holder = normalize_address(holder)
     return ctf_tx_pb2.MsgMergePositions(
-        holder=normalize_address(holder),
+        actor=normalize_address(actor) if str(actor).strip() else normalized_holder,
+        holder=normalized_holder,
         collateral_denom=str(collateral_denom),
         parent_collection_id=str(parent_collection_id),
         condition_id=str(condition_id),
@@ -243,13 +247,14 @@ def build_msg_merge_positions(holder: str, collateral_denom: str, parent_collect
     )
 
 
-def build_msg_redeem_positions(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, index_sets: Sequence[int]) -> ctf_tx_pb2.MsgRedeemPositions:
+def build_msg_redeem_positions(holder: str, collateral_denom: str, parent_collection_id: str, condition_id: str, index_sets: Sequence[int], actor: str = "") -> ctf_tx_pb2.MsgRedeemPositions:
     return ctf_tx_pb2.MsgRedeemPositions(
         holder=normalize_address(holder),
         collateral_denom=str(collateral_denom),
         parent_collection_id=str(parent_collection_id),
         condition_id=str(condition_id),
         index_sets=[int(index) for index in index_sets],
+        actor=normalize_address(actor) if str(actor).strip() else "",
     )
 
 

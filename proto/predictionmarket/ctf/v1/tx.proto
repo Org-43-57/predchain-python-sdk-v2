@@ -13,14 +13,15 @@ service Msg {
 }
 
 message MsgSplitPosition {
-  option (cosmos.msg.v1.signer) = "holder";
+  option (cosmos.msg.v1.signer) = "actor";
 
-  string holder = 1;
-  string collateral_denom = 2;
-  string parent_collection_id = 3;
-  string condition_id = 4;
-  repeated uint32 partition = 5;
-  string amount = 6;
+  string actor = 1;
+  string holder = 2;
+  string collateral_denom = 3;
+  string parent_collection_id = 4;
+  string condition_id = 5;
+  repeated uint32 partition = 6;
+  string amount = 7;
 }
 
 message MsgSplitPositionResponse {
@@ -29,14 +30,15 @@ message MsgSplitPositionResponse {
 }
 
 message MsgMergePositions {
-  option (cosmos.msg.v1.signer) = "holder";
+  option (cosmos.msg.v1.signer) = "actor";
 
-  string holder = 1;
-  string collateral_denom = 2;
-  string parent_collection_id = 3;
-  string condition_id = 4;
-  repeated uint32 partition = 5;
-  string amount = 6;
+  string actor = 1;
+  string holder = 2;
+  string collateral_denom = 3;
+  string parent_collection_id = 4;
+  string condition_id = 5;
+  repeated uint32 partition = 6;
+  string amount = 7;
 }
 
 message MsgMergePositionsResponse {}
@@ -49,6 +51,7 @@ message MsgRedeemPositions {
   string parent_collection_id = 3;
   string condition_id = 4;
   repeated uint32 index_sets = 5;
+  string actor = 6;
 }
 
 message MsgRedeemPositionsResponse {

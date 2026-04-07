@@ -103,6 +103,10 @@ print(submission.status)
 print(submission.accepted)
 ```
 
+`match_orders(...)` accepts either:
+- `Order` for token-identified orders
+- `ParlayOrder` for already-existing parlay markets identified by `legs + position_side`
+
 ## Multiple Relayers
 
 If one relayer key is not enough for your throughput target, use

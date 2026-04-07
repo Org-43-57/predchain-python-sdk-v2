@@ -24,12 +24,29 @@ message AgentAuthorization {
   bool active = 3;
 }
 
+message ParlayOrderLeg {
+  uint64 market_id = 1;
+  string required_outcome = 2;
+}
+
+message ParlayRef {
+  repeated ParlayOrderLeg legs = 1;
+  string position_side = 2;
+}
+
+message OrderRef {
+  oneof ref {
+    string token_id = 1;
+    ParlayRef parlay = 2;
+  }
+}
+
 message Order {
   string salt = 1;
   string maker = 2;
   string signer = 3;
   string taker = 4;
-  string token_id = 5;
+  OrderRef ref = 5;
   string maker_amount = 6;
   string taker_amount = 7;
   int64 expiration = 8;
@@ -38,11 +55,6 @@ message Order {
   string side = 11;
   string signature_type = 12;
   bytes signature = 13;
-}
-
-message ParlayOrderLeg {
-  uint64 market_id = 1;
-  string required_outcome = 2;
 }
 
 message ParlayOrder {

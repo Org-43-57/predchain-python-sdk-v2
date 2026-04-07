@@ -71,6 +71,9 @@ class ParlayOrder:
     signature: bytes | str = b""
 
 
+MatchOrder = Order | ParlayOrder
+
+
 @dataclass(slots=True)
 class ValidatorSlot:
     index: int

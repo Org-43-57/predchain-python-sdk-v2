@@ -11,7 +11,7 @@ from predictionmarket.settlement.v1 import tx_pb2 as settlement_tx_pb2
 from predictionmarket.testnetmint.v1 import tx_pb2 as testnetmint_tx_pb2
 
 from .crypto import decode_hex, normalize_hex
-from .models import Coin, Order, ParlayLeg, ParlayOrder, ValidatorSlot
+from .models import Coin, MatchOrder, Order, ParlayLeg, ParlayOrder, ValidatorSlot
 
 UINT256_MAX = (1 << 256) - 1
 
@@ -36,20 +36,43 @@ def coins_to_proto(coins: Sequence[Coin]) -> list[cosmos_coin_pb2.Coin]:
     return [cosmos_coin_pb2.Coin(denom=coin.denom, amount=str(coin.amount)) for coin in coins]
 
 
+def _signature_bytes(signature: bytes | str) -> bytes:
+    if isinstance(signature, str):
+        return decode_hex(signature) if signature.strip() else b""
+    return bytes(signature)
+
+
+def _settlement_parlay_legs(legs: Sequence[ParlayLeg | dict]) -> list[settlement_tx_pb2.ParlayOrderLeg]:
+    out: list[settlement_tx_pb2.ParlayOrderLeg] = []
+    for leg in legs:
+        if isinstance(leg, dict):
+            leg = ParlayLeg(**leg)
+        out.append(settlement_tx_pb2.ParlayOrderLeg(market_id=int(leg.market_id), required_outcome=str(leg.required_outcome)))
+    return out
+
+
+def _token_order_ref(token_id: str) -> settlement_tx_pb2.OrderRef:
+    return settlement_tx_pb2.OrderRef(token_id=str(token_id))
+
+
+def _parlay_order_ref(legs: Sequence[ParlayLeg | dict], position_side: str) -> settlement_tx_pb2.OrderRef:
+    return settlement_tx_pb2.OrderRef(
+        parlay=settlement_tx_pb2.ParlayRef(
+            legs=_settlement_parlay_legs(legs),
+            position_side=str(position_side),
+        )
+    )
+
+
 def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
     if isinstance(order, dict):
         order = Order(**order)
-    signature = order.signature
-    if isinstance(signature, str):
-        signature_bytes = decode_hex(signature) if signature.strip() else b""
-    else:
-        signature_bytes = bytes(signature)
     return settlement_tx_pb2.Order(
         salt=normalize_uint256(order.salt, "salt"),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
-        token_id=str(order.token_id),
+        ref=_token_order_ref(order.token_id),
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
         expiration=int(order.expiration),
@@ -57,24 +80,51 @@ def order_to_proto(order: Order | dict) -> settlement_tx_pb2.Order:
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),
-        signature=signature_bytes,
+        signature=_signature_bytes(order.signature),
     )
+
+
+def match_order_to_proto(order: MatchOrder | dict) -> settlement_tx_pb2.Order:
+    if isinstance(order, dict):
+        token_id = str(order.get("token_id", "")).strip()
+        legs = order.get("legs") or []
+        position_side = str(order.get("position_side", "")).strip()
+        if token_id and (legs or position_side):
+            raise ValueError("match order must specify either token_id or legs+position_side, not both")
+        if token_id:
+            order = Order(**order)
+        elif legs or position_side:
+            order = ParlayOrder(**order)
+        else:
+            raise ValueError("match order must specify token_id or legs+position_side")
+    if isinstance(order, ParlayOrder):
+        return settlement_tx_pb2.Order(
+            salt=normalize_uint256(order.salt, "salt"),
+            maker=normalize_address(order.maker),
+            signer=normalize_address(order.signer),
+            taker=normalize_address(order.taker) if str(order.taker).strip() else "",
+            ref=_parlay_order_ref(order.legs, order.position_side),
+            maker_amount=str(order.maker_amount),
+            taker_amount=str(order.taker_amount),
+            expiration=int(order.expiration),
+            nonce=normalize_uint256(order.nonce, "nonce"),
+            fee_rate_bps=int(order.fee_rate_bps),
+            side=str(order.side),
+            signature_type=str(order.signature_type),
+            signature=_signature_bytes(order.signature),
+        )
+    return order_to_proto(order)
 
 
 def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.ParlayOrder:
     if isinstance(order, dict):
         order = ParlayOrder(**order)
-    signature = order.signature
-    if isinstance(signature, str):
-        signature_bytes = decode_hex(signature) if signature.strip() else b""
-    else:
-        signature_bytes = bytes(signature)
     return settlement_tx_pb2.ParlayOrder(
         salt=normalize_uint256(order.salt, "salt"),
         maker=normalize_address(order.maker),
         signer=normalize_address(order.signer),
         taker=normalize_address(order.taker) if str(order.taker).strip() else "",
-        legs=[settlement_tx_pb2.ParlayOrderLeg(market_id=int(leg.market_id), required_outcome=str(leg.required_outcome)) for leg in order.legs],
+        legs=_settlement_parlay_legs(order.legs),
         position_side=str(order.position_side),
         maker_amount=str(order.maker_amount),
         taker_amount=str(order.taker_amount),
@@ -83,7 +133,7 @@ def parlay_order_to_proto(order: ParlayOrder | dict) -> settlement_tx_pb2.Parlay
         fee_rate_bps=int(order.fee_rate_bps),
         side=str(order.side),
         signature_type=str(order.signature_type),
-        signature=signature_bytes,
+        signature=_signature_bytes(order.signature),
     )
 
 
@@ -253,11 +303,11 @@ def build_msg_redeem_positions(holder: str, collateral_denom: str, parent_collec
     )
 
 
-def build_msg_match_orders(submitter: str, taker_order: Order | dict, maker_orders: Sequence[Order | dict], taker_fill_amount: str, maker_fill_amounts: Sequence[str], surplus_recipient: str = "") -> settlement_tx_pb2.MsgMatchOrders:
+def build_msg_match_orders(submitter: str, taker_order: MatchOrder | dict, maker_orders: Sequence[MatchOrder | dict], taker_fill_amount: str, maker_fill_amounts: Sequence[str], surplus_recipient: str = "") -> settlement_tx_pb2.MsgMatchOrders:
     return settlement_tx_pb2.MsgMatchOrders(
         submitter=normalize_address(submitter),
-        taker_order=order_to_proto(taker_order),
-        maker_orders=[order_to_proto(order) for order in maker_orders],
+        taker_order=match_order_to_proto(taker_order),
+        maker_orders=[match_order_to_proto(order) for order in maker_orders],
         taker_fill_amount=str(taker_fill_amount),
         maker_fill_amounts=[str(value) for value in maker_fill_amounts],
         surplus_recipient=normalize_address(surplus_recipient) if str(surplus_recipient).strip() else "",

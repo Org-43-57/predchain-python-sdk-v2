@@ -47,7 +47,7 @@ from .messages import (
     normalize_address,
     normalize_uint256,
 )
-from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, Order, ParlayLeg, ParlayOrder, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
+from .models import DEFAULT_CHAIN_ID, AccountInfo, BroadcastMode, Coin, MatchOrder, Order, ParlayLeg, ParlayOrder, RelayerConfig, TxSubmission, ValidatorSlot, to_payload
 
 
 class PredchainSDKv2Client:
@@ -606,8 +606,8 @@ class PredchainSDKv2Client:
         msg = build_msg_redeem_positions(holder or self.cfg.signer_address, collateral_denom, parent_collection_id, condition_id, index_sets)
         return self.submit_message(msg, signer_address=msg.holder, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def match_orders(self, taker_order: Order | dict[str, Any], maker_orders: list[Order | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
-        """Submit one `MsgMatchOrders` using already-signed off-chain orders."""
+    def match_orders(self, taker_order: MatchOrder | dict[str, Any], maker_orders: list[MatchOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+        """Submit one `MsgMatchOrders` using already-signed token or existing-parlay orders."""
         msg = build_msg_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient)
         return self.submit_message(msg, signer_address=msg.submitter, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 

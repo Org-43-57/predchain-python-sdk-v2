@@ -200,8 +200,6 @@ Market/admin flows:
 - `create_neg_risk_group(...)`
 - `update_neg_risk_group(...)`
 - `pause_market(...)`
-- `set_market_fee(...)`
-- `set_parlay_default_fee(...)`
 - `resolve_market(...)`
 - `update_market_admin(...)`
 

@@ -72,8 +72,6 @@ class PredchainSDKv2Client:
         "predictionmarket.market.v1.MsgConvertNegRiskPosition": 300_000,
         "predictionmarket.market.v1.MsgCollapseParlayPosition": 260_000,
         "predictionmarket.market.v1.MsgPauseMarket": 150_000,
-        "predictionmarket.market.v1.MsgSetMarketFee": 150_000,
-        "predictionmarket.market.v1.MsgSetParlayDefaultFee": 150_000,
         "predictionmarket.market.v1.MsgResolveMarket": 220_000,
         "predictionmarket.ctf.v1.MsgSplitPosition": 260_000,
         "predictionmarket.ctf.v1.MsgMergePositions": 260_000,
@@ -536,14 +534,14 @@ class PredchainSDKv2Client:
         msg = build_msg_update_testnetmint_admin(authority or self.cfg.signer_address, new_admin)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def create_market(self, question: str, taker_fee_bps: int = 100, metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def create_market(self, question: str, metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Create a binary market directly on-chain."""
-        msg = build_msg_create_market(authority or self.cfg.signer_address, question, metadata_uri, taker_fee_bps)
+        msg = build_msg_create_market(authority or self.cfg.signer_address, question, metadata_uri)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def create_parlay_market(self, legs: list[ParlayLeg], taker_fee_bps: int = 0, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def create_parlay_market(self, legs: list[ParlayLeg], authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Create a parlay market from underlying market legs."""
-        msg = build_msg_create_parlay_market(authority or self.cfg.signer_address, legs, taker_fee_bps)
+        msg = build_msg_create_parlay_market(authority or self.cfg.signer_address, legs)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def create_neg_risk_group(self, title: str, market_ids: list[int], metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
@@ -576,16 +574,6 @@ class PredchainSDKv2Client:
         msg = build_msg_pause_market(authority or self.cfg.signer_address, market_id, paused)
         return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def set_market_fee(self, market_id: int, taker_fee_bps: int, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
-        """Update the taker fee of an existing market."""
-        msg = build_msg_set_market_fee(authority or self.cfg.signer_address, market_id, taker_fee_bps)
-        return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
-
-    def set_parlay_default_fee(self, default_taker_fee_bps: int, authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
-        """Update the default fee used for explicit or on-demand parlay creation."""
-        msg = build_msg_set_parlay_default_fee(authority or self.cfg.signer_address, default_taker_fee_bps)
-        return self.submit_message(msg, signer_address=msg.authority, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
-
     def resolve_market(self, market_id: int, winning_outcome: str, resolution_metadata_uri: str = "", authority: str | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Resolve a market to its winning outcome."""
         msg = build_msg_resolve_market(authority or self.cfg.signer_address, market_id, winning_outcome, resolution_metadata_uri)
@@ -609,14 +597,14 @@ class PredchainSDKv2Client:
         msg = build_msg_redeem_positions(effective_holder, collateral_denom, parent_collection_id, condition_id, index_sets, actor=actor or "")
         return self.submit_message(msg, signer_address=(msg.actor or msg.holder), gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def match_orders(self, taker_order: MatchOrder | dict[str, Any], maker_orders: list[MatchOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def match_orders(self, taker_order: MatchOrder | dict[str, Any], maker_orders: list[MatchOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", match_fee_bps: int | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Submit one `MsgMatchOrders` using already-signed token or existing-parlay orders."""
-        msg = build_msg_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient)
+        msg = build_msg_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient, match_fee_bps)
         return self.submit_message(msg, signer_address=msg.submitter, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
-    def ensure_parlay_and_match_orders(self, taker_order: ParlayOrder | dict[str, Any], maker_orders: list[ParlayOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
+    def ensure_parlay_and_match_orders(self, taker_order: ParlayOrder | dict[str, Any], maker_orders: list[ParlayOrder | dict[str, Any]], taker_fill_amount: str, maker_fill_amounts: list[str], submitter: str | None = None, surplus_recipient: str = "", match_fee_bps: int | None = None, gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:
         """Submit one `MsgEnsureParlayAndMatchOrders` using already-signed parlay orders."""
-        msg = build_msg_ensure_parlay_and_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient)
+        msg = build_msg_ensure_parlay_and_match_orders(submitter or self.cfg.signer_address, taker_order, maker_orders, taker_fill_amount, maker_fill_amounts, surplus_recipient, match_fee_bps)
         return self.submit_message(msg, signer_address=msg.submitter, gas_limit=gas_limit, broadcast_mode=broadcast_mode)
 
     def cancel_orders(self, order_hashes: list[str], signer: str | None = None, principal: str = "", gas_limit: int | None = None, broadcast_mode: BroadcastMode | None = None) -> TxSubmission:

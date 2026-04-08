@@ -192,19 +192,17 @@ def build_msg_update_testnetmint_admin(authority: str, new_admin: str) -> testne
     return testnetmint_tx_pb2.MsgUpdateAdmin(authority=normalize_address(authority), new_admin=normalize_address(new_admin))
 
 
-def build_msg_create_market(authority: str, question: str, metadata_uri: str, taker_fee_bps: int) -> market_tx_pb2.MsgCreateMarket:
+def build_msg_create_market(authority: str, question: str, metadata_uri: str) -> market_tx_pb2.MsgCreateMarket:
     return market_tx_pb2.MsgCreateMarket(
         authority=normalize_address(authority),
         question=str(question),
         metadata_uri=str(metadata_uri),
-        taker_fee_bps=int(taker_fee_bps),
     )
 
 
-def build_msg_create_parlay_market(authority: str, legs: Sequence[ParlayLeg], taker_fee_bps: int = 0) -> market_tx_pb2.MsgCreateParlayMarket:
+def build_msg_create_parlay_market(authority: str, legs: Sequence[ParlayLeg]) -> market_tx_pb2.MsgCreateParlayMarket:
     return market_tx_pb2.MsgCreateParlayMarket(
         authority=normalize_address(authority),
-        taker_fee_bps=int(taker_fee_bps),
         legs=parlay_legs_to_proto(legs),
     )
 
@@ -254,14 +252,6 @@ def build_msg_pause_market(authority: str, market_id: int, paused: bool) -> mark
     return market_tx_pb2.MsgPauseMarket(authority=normalize_address(authority), market_id=int(market_id), paused=bool(paused))
 
 
-def build_msg_set_market_fee(authority: str, market_id: int, taker_fee_bps: int) -> market_tx_pb2.MsgSetMarketFee:
-    return market_tx_pb2.MsgSetMarketFee(authority=normalize_address(authority), market_id=int(market_id), taker_fee_bps=int(taker_fee_bps))
-
-
-def build_msg_set_parlay_default_fee(authority: str, default_taker_fee_bps: int) -> market_tx_pb2.MsgSetParlayDefaultFee:
-    return market_tx_pb2.MsgSetParlayDefaultFee(authority=normalize_address(authority), default_taker_fee_bps=int(default_taker_fee_bps))
-
-
 def build_msg_resolve_market(authority: str, market_id: int, winning_outcome: str, resolution_metadata_uri: str) -> market_tx_pb2.MsgResolveMarket:
     return market_tx_pb2.MsgResolveMarket(
         authority=normalize_address(authority),
@@ -308,8 +298,8 @@ def build_msg_redeem_positions(holder: str, collateral_denom: str, parent_collec
     )
 
 
-def build_msg_match_orders(submitter: str, taker_order: MatchOrder | dict, maker_orders: Sequence[MatchOrder | dict], taker_fill_amount: str, maker_fill_amounts: Sequence[str], surplus_recipient: str = "") -> settlement_tx_pb2.MsgMatchOrders:
-    return settlement_tx_pb2.MsgMatchOrders(
+def build_msg_match_orders(submitter: str, taker_order: MatchOrder | dict, maker_orders: Sequence[MatchOrder | dict], taker_fill_amount: str, maker_fill_amounts: Sequence[str], surplus_recipient: str = "", match_fee_bps: int | None = None) -> settlement_tx_pb2.MsgMatchOrders:
+    payload = settlement_tx_pb2.MsgMatchOrders(
         submitter=normalize_address(submitter),
         taker_order=match_order_to_proto(taker_order),
         maker_orders=[match_order_to_proto(order) for order in maker_orders],
@@ -317,6 +307,9 @@ def build_msg_match_orders(submitter: str, taker_order: MatchOrder | dict, maker
         maker_fill_amounts=[str(value) for value in maker_fill_amounts],
         surplus_recipient=normalize_address(surplus_recipient) if str(surplus_recipient).strip() else "",
     )
+    if match_fee_bps is not None:
+        payload.match_fee_bps = int(match_fee_bps)
+    return payload
 
 
 def build_msg_ensure_parlay_and_match_orders(
@@ -326,8 +319,9 @@ def build_msg_ensure_parlay_and_match_orders(
     taker_fill_amount: str,
     maker_fill_amounts: Sequence[str],
     surplus_recipient: str = "",
+    match_fee_bps: int | None = None,
 ) -> settlement_tx_pb2.MsgEnsureParlayAndMatchOrders:
-    return settlement_tx_pb2.MsgEnsureParlayAndMatchOrders(
+    payload = settlement_tx_pb2.MsgEnsureParlayAndMatchOrders(
         submitter=normalize_address(submitter),
         taker_order=parlay_order_to_proto(taker_order),
         maker_orders=[parlay_order_to_proto(order) for order in maker_orders],
@@ -335,6 +329,9 @@ def build_msg_ensure_parlay_and_match_orders(
         maker_fill_amounts=[str(value) for value in maker_fill_amounts],
         surplus_recipient=normalize_address(surplus_recipient) if str(surplus_recipient).strip() else "",
     )
+    if match_fee_bps is not None:
+        payload.match_fee_bps = int(match_fee_bps)
+    return payload
 
 
 def build_msg_cancel_orders(signer: str, order_hashes: Sequence[str], principal: str = "") -> settlement_tx_pb2.MsgCancelOrders:

@@ -275,8 +275,6 @@ The same client also includes the broader chain tx helpers.
 - `create_neg_risk_group(...)`
 - `update_neg_risk_group(...)`
 - `pause_market(...)`
-- `set_market_fee(...)`
-- `set_parlay_default_fee(...)`
 - `resolve_market(...)`
 - `update_market_admin(...)`
 
@@ -319,14 +317,7 @@ Important behavior:
 
 - there is no user-facing parlay question or metadata field
 - the chain derives the parlay question from the leg markets
-- `taker_fee_bps=0` means “use the current default parlay fee”
-
-### `set_parlay_default_fee(...)`
-
-Updates the admin-controlled default fee used when:
-
-- explicit parlay creation passes `taker_fee_bps=0`
-- on-demand parlay creation inside settlement materializes a missing parlay market
+- dynamic execution fees are no longer stored on the market itself
 
 ### `ensure_parlay_and_match_orders(...)`
 
@@ -337,6 +328,7 @@ This path:
 - matches signed parlay orders that carry `legs` and `position_side`
 - creates the parlay market only if it does not already exist
 - reuses the existing parlay market otherwise
+- accepts optional `match_fee_bps` so the matcher provides the actual taker fee at execution time
 
 ## Sequence Handling
 

@@ -35,8 +35,6 @@ from .messages import (
     build_msg_resolve_market,
     build_msg_revoke_agent,
     build_msg_send,
-    build_msg_set_market_fee,
-    build_msg_set_parlay_default_fee,
     build_msg_set_matcher_authorization,
     build_msg_set_validator_set,
     build_msg_split_position,
